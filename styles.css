@@ -324,3 +324,13 @@ textarea:focus {
   width: auto;
   margin-bottom: 0;
 }
+
+.out-actions{
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.output-box header button:last-child {
+  background: #4a5568; /* subtle grey/blue */
+}
