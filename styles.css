@@ -240,11 +240,17 @@ label {
 }
 
 .output-box button {
-  background: #0077b6;
+  background: #0077b6;   /* Copy stays blue everywhere */
   color: white;
   border: none;
   padding: 4px 10px;
   cursor: pointer;
+  border-radius: 6px;
+}
+
+/* Download buttons explicitly grey */
+.output-box button.btn-secondary {
+  background: #4a5568;
 }
 
 pre {
@@ -331,6 +337,26 @@ textarea:focus {
   align-items: center;
 }
 
-.output-box header button:last-child {
-  background: #4a5568; /* subtle grey/blue */
+/* Informational tip / callout box */
+.tip-box {
+  margin-top: 14px;
+  padding: 12px 14px;
+  background: #f0f7fb;
+  border-left: 4px solid #0077b6;
+  border-radius: 4px;
+  max-width: 900px;
+}
+
+.tip-box .tip-title {
+  font-weight: 600;
+  font-size: 13px;
+  margin-bottom: 6px;
+  color: #003a5d;
+}
+
+.tip-box p {
+  margin: 6px 0;
+  font-size: 13px;
+  line-height: 1.35;
+  color: #333;
 }

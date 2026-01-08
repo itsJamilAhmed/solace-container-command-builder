@@ -72,7 +72,7 @@
     <p class="section-desc">The choice of <a href="https://docs.solace.com/Software-Broker/SW-Broker-Set-Up/Containers/Deploying-Container-in-Production.htm#networking" target="_blank">networking mode</a> is an important consideration when deploying Solace containers.</p>
     <p class="section-desc">1. bridge networking: the container is deployed in a separate network namespace from the host, with port forwarding rules.</p>
     <p class="section-desc">2. host networking: the container is deployed in the host’s network namespace.</p>
-    <p class="section-desc">3. slirp4netns networking: suitable if running containers without root access.</p>
+    <p class="section-desc">3. slirp4netns networking: suitable if running rootless containers with podman.</p>
 
     <label>
       Network Mode
@@ -93,6 +93,23 @@
     <label>Storage Path on Host
       <input id="storage_path" placeholder="/mnt/extfs/containers/solace/storage-group" />
     </label>
+
+    <!-- Only show when runtime=podman AND network_mode=slirp4netns -->
+    <div id="storage_tip_podman_slirp" class="tip-box" style="display:none;">
+      <div class="tip-title">💡 Top Tip</div>
+      <p>
+        If running rootless containers (with <code>podman</code>), take extra care to manage the directory permissions of the above path.
+      </p>
+      <p>
+        The filesystem inside the Solace container is owned by root, and attempts to write to a location owned by an unprivileged user on the host will fail.
+      </p>
+      <p>
+        Use the command
+        <code>"podman unshare chown -R &lt;container-UID&gt;:&lt;container-GID&gt; /path/to/host/storage"</code>
+        so the container can write to it. See <a href="https://docs.solace.com/Software-Broker/Container-Tasks/Config-Container-Storage.htm#directory-ownership-with-rootless-containers"
+           target="_blank">the documentation</a> for more information.
+      </p>
+    </div>
   </details>
 
   <!-- Password -->
@@ -423,8 +440,14 @@
         <pre id="output-monitor"></pre>
       </div>
 
-      <div id="ha-post-deploy-tips">
-        <p class="section-desc"><b>Top Tip:</b> After deploying a High-Availability broker group, you need to designate one of the brokers as the config-sync 'leader' after all are successfully running. See full instructions <a href="https://docs.solace.com/Features/Config-Sync/Configuring-Config-Sync.htm#Assertin" target="_blank">here</a>.</p>
+      <div id="ha-post-deploy-tips" class="tip-box">
+        <div class="tip-title">💡 Top Tip</div>
+        <p>
+          After deploying a High-Availability broker group, you need to designate one of the brokers as the config-sync 'leader' after all are successfully running.
+        </p>
+        <p>
+          See <a href="https://docs.solace.com/Features/Config-Sync/Configuring-Config-Sync.htm#Assertin" target="_blank">here</a> for more instructions.
+        </p>
       </div>
     </div>
 
@@ -433,7 +456,10 @@
       <div id="compose-out-standalone" class="output-box">
         <header>
           Standalone node docker-compose.yml (deploy on standalone host)
-          <button type="button" onclick="copyOut('compose-standalone')">Copy</button>
+          <div class="out-actions">
+            <button type="button" onclick="copyOut('compose-standalone')">Copy</button>
+            <button type="button" class="btn-secondary" onclick="downloadOut('compose-standalone','docker-compose.yml')">Download</button>
+          </div>
         </header>
         <pre id="compose-standalone"></pre>
       </div>
@@ -441,7 +467,10 @@
       <div id="compose-out-primary" class="output-box" style="display:none">
         <header>
           Primary node docker-compose.yml (deploy on primary host)
-          <button type="button" onclick="copyOut('compose-primary')">Copy</button>
+          <div class="out-actions">
+            <button type="button" onclick="copyOut('compose-primary')">Copy</button>
+            <button type="button" class="btn-secondary" onclick="downloadOut('compose-primary','docker-compose-primary.yml')">Download</button>
+          </div>
         </header>
         <pre id="compose-primary"></pre>
       </div>
@@ -449,7 +478,10 @@
       <div id="compose-out-backup" class="output-box" style="display:none">
         <header>
           Backup node docker-compose.yml (deploy on backup host)
-          <button type="button" onclick="copyOut('compose-backup')">Copy</button>
+          <div class="out-actions">
+            <button type="button" onclick="copyOut('compose-backup')">Copy</button>
+            <button type="button" class="btn-secondary" onclick="downloadOut('compose-backup','docker-compose-backup.yml')">Download</button>
+          </div>
         </header>
         <pre id="compose-backup"></pre>
       </div>
@@ -457,12 +489,14 @@
       <div id="compose-out-monitor" class="output-box" style="display:none">
         <header>
           Monitor node docker-compose.yml (deploy on monitor host)
-          <button type="button" onclick="copyOut('compose-monitor')">Copy</button>
+          <div class="out-actions">
+            <button type="button" onclick="copyOut('compose-monitor')">Copy</button>
+            <button type="button" class="btn-secondary" onclick="downloadOut('compose-monitor','docker-compose-monitor.yml')">Download</button>
+          </div>
         </header>
         <pre id="compose-monitor"></pre>
       </div>
     </div>
-
   </section>
 
 </main>
@@ -473,6 +507,21 @@
     const el = document.getElementById(preId);
     const text = (el && el.innerText) ? el.innerText : "";
     navigator.clipboard.writeText(text);
+  }
+
+  function downloadOut(preId, filename) {
+    const el = document.getElementById(preId);
+    const text = (el && el.innerText) ? el.innerText : "";
+    const blob = new Blob([text], { type: "text/yaml;charset=utf-8" });
+
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename || "docker-compose.yml";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
   }
 </script>
 
