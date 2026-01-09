@@ -35,7 +35,7 @@
     <summary>Container Runtime, Image Repository and Restart Policy</summary>
     <p class="section-desc">Solace supports <code>docker</code> and <code>podman</code> as <a href="https://docs.solace.com/Software-Broker/SW-Broker-Set-Up/Containers/Deploying-Container-in-Production.htm#configuring-the-container-runtime" target="_blank">container runtimes</a>, and the image can be pulled from Docker Hub.</p>
     <p class="section-desc">It is important for instances of Solace containers to <a href="https://docs.solace.com/Software-Broker/SW-Broker-Set-Up/Containers/Deploying-Container-in-Production.htm#configuring-the-container-to-start-automatically" target="_blank">restart automatically</a> in the case of a crash or host reboot so set a restart policy accordingly.</p>
-    <p class="section-desc">The default user ID in a Solace container is <a href="https://docs.solace.com/Software-Broker/Container-Tasks/Config-Arbitrary-User.htm#Configuring_Container_Users" target="_blank">1000001.</a>. You can provide a specific UID available on the host machine if required to override this.</p>
+    <p class="section-desc">The default user ID in a Solace container is <a href="https://docs.solace.com/Software-Broker/Container-Tasks/Config-Arbitrary-User.htm#Configuring_Container_Users" target="_blank">1000001</a>. You can provide a specific UID available on the host machine if required to override this.</p>
 
     <div class="form-grid">
       <!-- Row 1: Container Runtime (full row) -->
@@ -136,7 +136,7 @@
     <p class="section-desc">This user will be called <code>admin</code> with the initial password possible to be supplied in one of three ways:</p>
     <p class="section-desc">1. Plain text string: suitable for quick-start developer environments.</p>
     <p class="section-desc">2. Password file path: a file on the host filesystem to read for the password.</p>
-    <p class="section-desc">3. Encrypted password: provide a previously encrypted password. SHA-512 is supported. Salt prior to hashing. Format: <code>$6$salt$hashed-password</code></p>
+    <p class="section-desc">3. Encrypted password: provide a previously encrypted password.</p>
 
     <label>
       Password Input Method
@@ -151,6 +151,20 @@
       Password Value / Path
       <input id="pw_value" placeholder="Enter password, path, or encrypted value" value="mysecret">
     </label>
+	
+	<!-- Only show when password_method=encrypted_password -->
+	<div id="pw_encrypted_note" class="tip-box callout callout-hidden" aria-hidden="true">
+	  <div class="tip-title">Important Note</div>
+	  <p>
+		The encrypted password must be a SHA-512 hash, generated using a random string <i>salt</i>. 
+	  </p>
+	  <p>
+		Provide it above in the format: <code>$6$&lt;salt string&gt;$&lt;password-hash&gt;</code> e.g. <code>$6$uE7L+w62wAI4$A0A5D01...1F65E441134AE01256</code>
+	  </p>
+	  <p>
+	    Online hash generators such as <a href="https://randommer.io/Hash/SHA512" target="_blank">https://randommer.io/Hash/SHA512</a> can be used for this.
+	  </p>
+	</div>
   </details>
 
   <!-- Ports wrapper: fade this whole block -->

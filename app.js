@@ -240,6 +240,12 @@ function syncStorageTipVisibility() {
   setCalloutVisible($("storage_tip_podman_slirp"), runtime === "podman" && net === "slirp4netns");
 }
 
+/* Encrypted password note only when password_method=encrypted_password */
+function syncEncryptedPasswordNoteVisibility() {
+  const method = ($("password_method")?.value || "").trim();
+  setCalloutVisible($("pw_encrypted_note"), method === "encrypted_password");
+}
+
 /* Hide protocols section when host selected (with fade) */
 function syncPortsSectionVisibility() {
   const wrap = $("ports_wrap");
@@ -638,6 +644,8 @@ function build() {
   syncPortsSectionVisibility();
   syncStorageTipVisibility();
 
+  syncEncryptedPasswordNoteVisibility();
+  
   setHAVisibility(isHA);
   setOutputFormatVisibility();
 
