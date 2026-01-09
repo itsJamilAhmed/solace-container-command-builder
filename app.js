@@ -15,6 +15,10 @@ function isMacos() {
   return ($("macos")?.value || "no").trim() === "yes";
 }
 
+function runtimeIsPodman() {
+  return ($("runtime")?.value || "docker").trim() === "podman";
+}
+
 function splitEnvString(str) {
   if (!str) return [];
   return str.split(/\s+(?=--env)/).map(s => s.trim()).filter(Boolean);
@@ -171,11 +175,33 @@ function setCalloutVisible(el, visible) {
   el.setAttribute("aria-hidden", visible ? "false" : "true");
 }
 
+function setFadedSectionVisible(el, visible) {
+  if (!el) return;
+  el.classList.toggle("fade-hidden", !visible);
+}
+
+/* NEW: runtime constraints: slirp4netns only valid with podman */
+function syncRuntimeNetworkConstraints() {
+  const netSel = $("network_mode");
+  if (!netSel) return;
+
+  const slirpOpt = netSel.querySelector('option[value="slirp4netns"]');
+  const isPod = runtimeIsPodman();
+
+  if (slirpOpt) {
+    slirpOpt.disabled = !isPod;
+  }
+
+  // If currently slirp4netns but runtime is docker -> force bridge
+  if (!isPod && netSel.value === "slirp4netns") {
+    netSel.value = "bridge";
+  }
+}
+
 /* NEW: macos note + disable host mode */
 function syncMacosUi() {
   const mac = isMacos();
-  const note = $("macos_note");
-  setCalloutVisible(note, mac);
+  setCalloutVisible($("macos_note"), mac);
 
   const netSel = $("network_mode");
   const hostOpt = netSel?.querySelector('option[value="host"]');
@@ -184,33 +210,30 @@ function syncMacosUi() {
     hostOpt.disabled = mac;
   }
 
-  // If MacOS is yes, host mode cannot be selected; force bridge if currently host
+  // If MacOS yes, host mode cannot be selected; force bridge if currently host
   if (mac && netSel && netSel.value === "host") {
     netSel.value = "bridge";
   }
 }
 
-/* NEW: storage tip only for podman + slirp4netns */
+/* Storage tip only for podman + slirp4netns */
 function syncStorageTipVisibility() {
-  const tip = $("storage_tip_podman_slirp");
   const runtime = ($("runtime")?.value || "").trim();
   const net = ($("network_mode")?.value || "").trim();
-  setCalloutVisible(tip, runtime === "podman" && net === "slirp4netns");
+  setCalloutVisible($("storage_tip_podman_slirp"), runtime === "podman" && net === "slirp4netns");
 }
 
-/* NEW: hide protocols section when host network mode selected */
+/* Hide protocols section when host selected (with fade) */
 function syncPortsSectionVisibility() {
-  const portsSection = $("ports_section");
+  const wrap = $("ports_wrap");
   const net = ($("network_mode")?.value || "").trim();
-  if (!portsSection) return;
-  portsSection.style.display = (net === "host") ? "none" : "block";
+  setFadedSectionVisible(wrap, net !== "host");
 }
 
 /* ---------- shared args (run commands) ---------- */
 
 function buildBaseArgs(isHA) {
   const args = [];
-
   args.push(`${$("runtime").value} run -d`);
 
   if ($("uid").value) {
@@ -219,7 +242,7 @@ function buildBaseArgs(isHA) {
 
   const netMode = ($("network_mode")?.value || "bridge").trim();
 
-  // Port mappings are not needed for host mode
+  // No port mappings for host mode
   if (netMode !== "host") {
     for (const p of getSelectedPorts()) {
       // MacOS special case: map host 55554 -> container 55555
@@ -232,9 +255,6 @@ function buildBaseArgs(isHA) {
     if (isHA) {
       addHaPorts(args);
     }
-  } else {
-    // still include HA node ports? no, host networking implies direct host ports, no -p
-    // (and you are hiding protocols section anyway)
   }
 
   args.push(`--net ${netMode}`);
@@ -345,10 +365,7 @@ function composeEscape(str) {
 }
 
 function parseScalingForCompose(raw) {
-  const res = {
-    env: [], ulimits: [], shm_size: "", unmapped: []
-  };
-
+  const res = { env: [], ulimits: [], shm_size: "", unmapped: [] };
   if (!raw) return res;
 
   const tokens = raw.trim().split(/\s+/).filter(Boolean);
@@ -419,11 +436,9 @@ function collectPortsForCompose(isHA) {
   const bindings = [];
   const netMode = ($("network_mode")?.value || "bridge").trim();
 
-  // Compose also does not publish ports with network_mode: host
   if (netMode === "host") return [];
 
   for (const p of getSelectedPorts()) {
-    // MacOS special case mapping
     if (isMacos() && p === "55555") {
       bindings.push(`55554:55555`);
     } else {
@@ -463,9 +478,7 @@ function buildComposeYaml(serviceName, spec) {
 
   if (spec.ulimits && spec.ulimits.length) {
     lines.push("    ulimits:");
-    spec.ulimits.forEach(u => {
-      lines.push(`      ${u.name}: "${composeEscape(u.value)}"`);
-    });
+    spec.ulimits.forEach(u => lines.push(`      ${u.name}: "${composeEscape(u.value)}"`));
   }
 
   if (spec.network_mode === "host") {
@@ -600,18 +613,16 @@ function setOutputFormatVisibility() {
 function build() {
   const isHA = $("mode").value === "ha";
 
-  // NEW: MacOS note + host disable/force bridge
+  // First: runtime + macos constraints that may change network_mode value
+  syncRuntimeNetworkConstraints();
   syncMacosUi();
 
-  // NEW: if host, hide protocols section
+  // Then dependent UI
   syncPortsSectionVisibility();
+  syncStorageTipVisibility();
 
-  // Existing
   setHAVisibility(isHA);
   setOutputFormatVisibility();
-
-  // Existing but now uses fade callout
-  syncStorageTipVisibility();
 
   document.querySelectorAll(".ports-btn-toggle[data-toggle-ports]").forEach(btn => {
     const ports = btn.dataset.togglePorts.split(",").map(s => s.trim()).filter(Boolean);

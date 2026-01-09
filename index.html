@@ -113,7 +113,7 @@
 
     <!-- Only show when runtime=podman AND network_mode=slirp4netns -->
     <div id="storage_tip_podman_slirp" class="tip-box callout callout-hidden" aria-hidden="true">
-      <div class="tip-title">💡 Top Tip</div>
+      <div class="tip-title">Important Note</div>
       <p>
         If running rootless containers (with <code>podman</code>), take extra care to manage the directory permissions of the above path.
       </p>
@@ -136,7 +136,7 @@
     <p class="section-desc">This user will be called <code>admin</code> with the initial password possible to be supplied in one of three ways:</p>
     <p class="section-desc">1. Plain text string: suitable for quick-start developer environments.</p>
     <p class="section-desc">2. Password file path: a file on the host filesystem to read for the password.</p>
-    <p class="section-desc">3. Encrypted password: provide a previously encrypted password. SHA-512 is supported. Salt prior to hashing. Format: <code>$6$salt$hashed-password</code> </p>
+    <p class="section-desc">3. Encrypted password: provide a previously encrypted password. SHA-512 is supported. Salt prior to hashing. Format: <code>$6$salt$hashed-password</code></p>
 
     <label>
       Password Input Method
@@ -153,168 +153,170 @@
     </label>
   </details>
 
-  <!-- Ports -->
-  <details open class="card" id="ports_section">
-    <summary>Protocols and Port Forwarding</summary>
-    <p class="section-desc">As Solace is a multi-protocol broker, the services are provided over a number of different ports.</p>
-    <p class="section-desc">Select the protocols you intend to use so that the port forwarding rules can be constructed between the container's network namespace and the host network.</p>
+  <!-- Ports wrapper: fade this whole block -->
+  <div id="ports_wrap" class="fade-section">
+    <details open class="card" id="ports_section">
+      <summary>Protocols and Port Forwarding</summary>
+      <p class="section-desc">As Solace is a multi-protocol broker, the services are provided over a number of different ports.</p>
+      <p class="section-desc">Select the protocols you intend to use so that the port forwarding rules can be constructed between the container's network namespace and the host network.</p>
 
-    <div class="ports-toolbar">
-      <div class="ports-actions">
-        <button type="button" class="ports-btn" onclick="clearPorts()" title="Unchecks all protocol ports.">Clear all</button>
-        <button type="button" class="ports-btn ports-btn-primary" title="Selects the recommended minimum." onclick="recommendedPorts()">Recommended minimum</button>
+      <div class="ports-toolbar">
+        <div class="ports-actions">
+          <button type="button" class="ports-btn" onclick="clearPorts()" title="Unchecks all protocol ports.">Clear all</button>
+          <button type="button" class="ports-btn ports-btn-primary" title="Selects the recommended minimum." onclick="recommendedPorts()">Recommended minimum</button>
+        </div>
       </div>
-    </div>
-    <br/>
-    <div class="ports-groups">
-      <!-- SMF -->
-      <section class="ports-group">
-        <div class="ports-group-header">
-          <h3>Solace Messaging Protocol (SMF)</h3>
-          <button type="button" class="ports-btn ports-btn-toggle" title="Selects or clears all ports in this protocol group." data-toggle-ports="55555,55443" onclick="toggleProtocolFromAttr(this)">Select all</button>
-        </div>
-        <table class="ports-table">
-          <tr>
-            <td class="ports-check"><input type="checkbox" data-port="55555" /></td>
-            <td class="ports-label">SMF (Plain)</td>
-            <td class="ports-port">55555</td>
-          </tr>
-          <tr>
-            <td class="ports-check"><input type="checkbox" data-port="55443" /></td>
-            <td class="ports-label">SMF (Secure TLS)</td>
-            <td class="ports-port">55443</td>
-          </tr>
-        </table>
-      </section>
+      <br/>
+      <div class="ports-groups">
+        <!-- SMF -->
+        <section class="ports-group">
+          <div class="ports-group-header">
+            <h3>Solace Messaging Protocol (SMF)</h3>
+            <button type="button" class="ports-btn ports-btn-toggle" title="Selects or clears all ports in this protocol group." data-toggle-ports="55555,55443" onclick="toggleProtocolFromAttr(this)">Select all</button>
+          </div>
+          <table class="ports-table">
+            <tr>
+              <td class="ports-check"><input type="checkbox" data-port="55555" /></td>
+              <td class="ports-label">SMF (Plain)</td>
+              <td class="ports-port">55555</td>
+            </tr>
+            <tr>
+              <td class="ports-check"><input type="checkbox" data-port="55443" /></td>
+              <td class="ports-label">SMF (Secure TLS)</td>
+              <td class="ports-port">55443</td>
+            </tr>
+          </table>
+        </section>
 
-      <!-- Web Messaging -->
-      <section class="ports-group">
-        <div class="ports-group-header">
-          <h3>Solace Messaging (SMF) over WebSocket</h3>
-          <button type="button" class="ports-btn ports-btn-toggle" title="Selects or clears all ports in this protocol group." data-toggle-ports="8008,1443" onclick="toggleProtocolFromAttr(this)">Select all</button>
-        </div>
-        <table class="ports-table">
-          <tr>
-            <td class="ports-check"><input type="checkbox" data-port="8008" /></td>
-            <td class="ports-label">WebSocket (Plain)</td>
-            <td class="ports-port">8008</td>
-          </tr>
-          <tr>
-            <td class="ports-check"><input type="checkbox" data-port="1443" /></td>
-            <td class="ports-label">WebSocket (Secure TLS)</td>
-            <td class="ports-port">1443</td>
-          </tr>
-        </table>
-      </section>
+        <!-- Web Messaging -->
+        <section class="ports-group">
+          <div class="ports-group-header">
+            <h3>Solace Messaging (SMF) over WebSocket</h3>
+            <button type="button" class="ports-btn ports-btn-toggle" title="Selects or clears all ports in this protocol group." data-toggle-ports="8008,1443" onclick="toggleProtocolFromAttr(this)">Select all</button>
+          </div>
+          <table class="ports-table">
+            <tr>
+              <td class="ports-check"><input type="checkbox" data-port="8008" /></td>
+              <td class="ports-label">WebSocket (Plain)</td>
+              <td class="ports-port">8008</td>
+            </tr>
+            <tr>
+              <td class="ports-check"><input type="checkbox" data-port="1443" /></td>
+              <td class="ports-label">WebSocket (Secure TLS)</td>
+              <td class="ports-port">1443</td>
+            </tr>
+          </table>
+        </section>
 
-      <!-- AMQP -->
-      <section class="ports-group">
-        <div class="ports-group-header">
-          <h3>AMQP</h3>
-          <button type="button" class="ports-btn ports-btn-toggle" title="Selects or clears all ports in this protocol group." data-toggle-ports="5672,5671" onclick="toggleProtocolFromAttr(this)">Select all</button>
-        </div>
-        <table class="ports-table">
-          <tr>
-            <td class="ports-check"><input type="checkbox" data-port="5672" /></td>
-            <td class="ports-label">AMQP (Plain)</td>
-            <td class="ports-port">5672</td>
-          </tr>
-          <tr>
-            <td class="ports-check"><input type="checkbox" data-port="5671" /></td>
-            <td class="ports-label">AMQP (Secure TLS)</td>
-            <td class="ports-port">5671</td>
-          </tr>
-        </table>
-      </section>
+        <!-- AMQP -->
+        <section class="ports-group">
+          <div class="ports-group-header">
+            <h3>AMQP</h3>
+            <button type="button" class="ports-btn ports-btn-toggle" title="Selects or clears all ports in this protocol group." data-toggle-ports="5672,5671" onclick="toggleProtocolFromAttr(this)">Select all</button>
+          </div>
+          <table class="ports-table">
+            <tr>
+              <td class="ports-check"><input type="checkbox" data-port="5672" /></td>
+              <td class="ports-label">AMQP (Plain)</td>
+              <td class="ports-port">5672</td>
+            </tr>
+            <tr>
+              <td class="ports-check"><input type="checkbox" data-port="5671" /></td>
+              <td class="ports-label">AMQP (Secure TLS)</td>
+              <td class="ports-port">5671</td>
+            </tr>
+          </table>
+        </section>
 
-      <!-- MQTT -->
-      <section class="ports-group">
-        <div class="ports-group-header">
-          <h3>MQTT</h3>
-          <button type="button" class="ports-btn ports-btn-toggle" title="Selects or clears all ports in this protocol group." data-toggle-ports="1883,8883,8000,8443" onclick="toggleProtocolFromAttr(this)">Select all</button>
-        </div>
-        <table class="ports-table">
-          <tr>
-            <td class="ports-check"><input type="checkbox" data-port="1883" /></td>
-            <td class="ports-label">MQTT (Plain)</td>
-            <td class="ports-port">1883</td>
-          </tr>
-          <tr>
-            <td class="ports-check"><input type="checkbox" data-port="8883" /></td>
-            <td class="ports-label">MQTT (Secure TLS)</td>
-            <td class="ports-port">8883</td>
-          </tr>
-          <tr>
-            <td class="ports-check"><input type="checkbox" data-port="8000" /></td>
-            <td class="ports-label">MQTT WebSocket (Plain)</td>
-            <td class="ports-port">8000</td>
-          </tr>
-          <tr>
-            <td class="ports-check"><input type="checkbox" data-port="8443" /></td>
-            <td class="ports-label">MQTT WebSocket (Secure TLS)</td>
-            <td class="ports-port">8443</td>
-          </tr>
-        </table>
-      </section>
+        <!-- MQTT -->
+        <section class="ports-group">
+          <div class="ports-group-header">
+            <h3>MQTT</h3>
+            <button type="button" class="ports-btn ports-btn-toggle" title="Selects or clears all ports in this protocol group." data-toggle-ports="1883,8883,8000,8443" onclick="toggleProtocolFromAttr(this)">Select all</button>
+          </div>
+          <table class="ports-table">
+            <tr>
+              <td class="ports-check"><input type="checkbox" data-port="1883" /></td>
+              <td class="ports-label">MQTT (Plain)</td>
+              <td class="ports-port">1883</td>
+            </tr>
+            <tr>
+              <td class="ports-check"><input type="checkbox" data-port="8883" /></td>
+              <td class="ports-label">MQTT (Secure TLS)</td>
+              <td class="ports-port">8883</td>
+            </tr>
+            <tr>
+              <td class="ports-check"><input type="checkbox" data-port="8000" /></td>
+              <td class="ports-label">MQTT WebSocket (Plain)</td>
+              <td class="ports-port">8000</td>
+            </tr>
+            <tr>
+              <td class="ports-check"><input type="checkbox" data-port="8443" /></td>
+              <td class="ports-label">MQTT WebSocket (Secure TLS)</td>
+              <td class="ports-port">8443</td>
+            </tr>
+          </table>
+        </section>
 
-      <!-- REST -->
-      <section class="ports-group">
-        <div class="ports-group-header">
-          <h3>REST/HTTP Messaging</h3>
-          <button type="button" class="ports-btn ports-btn-toggle" title="Selects or clears all ports in this protocol group." data-toggle-ports="9000,9443" onclick="toggleProtocolFromAttr(this)">Select all</button>
-        </div>
-        <table class="ports-table">
-          <tr>
-            <td class="ports-check"><input type="checkbox" data-port="9000" /></td>
-            <td class="ports-label">REST (Plain)</td>
-            <td class="ports-port">9000</td>
-          </tr>
-          <tr>
-            <td class="ports-check"><input type="checkbox" data-port="9443" /></td>
-            <td class="ports-label">REST (Secure TLS)</td>
-            <td class="ports-port">9443</td>
-          </tr>
-        </table>
-      </section>
+        <!-- REST -->
+        <section class="ports-group">
+          <div class="ports-group-header">
+            <h3>REST/HTTP Messaging</h3>
+            <button type="button" class="ports-btn ports-btn-toggle" title="Selects or clears all ports in this protocol group." data-toggle-ports="9000,9443" onclick="toggleProtocolFromAttr(this)">Select all</button>
+          </div>
+          <table class="ports-table">
+            <tr>
+              <td class="ports-check"><input type="checkbox" data-port="9000" /></td>
+              <td class="ports-label">REST (Plain)</td>
+              <td class="ports-port">9000</td>
+            </tr>
+            <tr>
+              <td class="ports-check"><input type="checkbox" data-port="9443" /></td>
+              <td class="ports-label">REST (Secure TLS)</td>
+              <td class="ports-port">9443</td>
+            </tr>
+          </table>
+        </section>
 
-      <!-- SEMP -->
-      <section class="ports-group">
-        <div class="ports-group-header">
-          <h3>SEMP (Management API)</h3>
-          <button type="button" class="ports-btn ports-btn-toggle" title="Selects or clears all ports in this protocol group." data-toggle-ports="8080,1943" onclick="toggleProtocolFromAttr(this)">Select all</button>
-        </div>
-        <table class="ports-table">
-          <tr>
-            <td class="ports-check"><input type="checkbox" data-port="8080" /></td>
-            <td class="ports-label">SEMP (Plain)</td>
-            <td class="ports-port">8080</td>
-          </tr>
-          <tr>
-            <td class="ports-check"><input type="checkbox" data-port="1943" /></td>
-            <td class="ports-label">SEMP (Secure TLS)</td>
-            <td class="ports-port">1943</td>
-          </tr>
-        </table>
-      </section>
+        <!-- SEMP -->
+        <section class="ports-group">
+          <div class="ports-group-header">
+            <h3>SEMP (Management API)</h3>
+            <button type="button" class="ports-btn ports-btn-toggle" title="Selects or clears all ports in this protocol group." data-toggle-ports="8080,1943" onclick="toggleProtocolFromAttr(this)">Select all</button>
+          </div>
+          <table class="ports-table">
+            <tr>
+              <td class="ports-check"><input type="checkbox" data-port="8080" /></td>
+              <td class="ports-label">SEMP (Plain)</td>
+              <td class="ports-port">8080</td>
+            </tr>
+            <tr>
+              <td class="ports-check"><input type="checkbox" data-port="1943" /></td>
+              <td class="ports-label">SEMP (Secure TLS)</td>
+              <td class="ports-port">1943</td>
+            </tr>
+          </table>
+        </section>
 
-      <!-- CLI -->
-      <section class="ports-group">
-        <div class="ports-group-header">
-          <h3>Command Line Interface over SSH</h3>
-          <button type="button" class="ports-btn ports-btn-toggle" title="Selects or clears all ports in this protocol group." data-toggle-ports="2222" onclick="toggleProtocolFromAttr(this)">Select all</button>
-        </div>
-        <table class="ports-table">
-          <tr>
-            <td class="ports-check"><input type="checkbox" data-port="2222" /></td>
-            <td class="ports-label">CLI (SSH)</td>
-            <td class="ports-port">2222</td>
-          </tr>
-        </table>
-      </section>
-    </div>
-    <br/>
-    <small>Note: Additional ports related to communication between HA nodes are automatically included when HA mode is selected and are not explicitly shown here.</small>
-  </details>
+        <!-- CLI -->
+        <section class="ports-group">
+          <div class="ports-group-header">
+            <h3>Command Line Interface over SSH</h3>
+            <button type="button" class="ports-btn ports-btn-toggle" title="Selects or clears all ports in this protocol group." data-toggle-ports="2222" onclick="toggleProtocolFromAttr(this)">Select all</button>
+          </div>
+          <table class="ports-table">
+            <tr>
+              <td class="ports-check"><input type="checkbox" data-port="2222" /></td>
+              <td class="ports-label">CLI (SSH)</td>
+              <td class="ports-port">2222</td>
+            </tr>
+          </table>
+        </section>
+      </div>
+      <br/>
+      <small>Note: Additional ports related to communication between HA nodes are automatically included when HA mode is selected and are not explicitly shown here.</small>
+    </details>
+  </div>
 
   <!-- Scaling -->
   <details open class="card">
@@ -458,7 +460,7 @@
       </div>
 
       <div id="ha-post-deploy-tips" class="tip-box callout callout-hidden" aria-hidden="true">
-        <div class="tip-title">💡 Top Tip</div>
+        <div class="tip-title">Important Note</div>
         <p>
           After deploying a High-Availability broker group, you need to designate one of the brokers as the config-sync 'leader' after all are successfully running.
         </p>

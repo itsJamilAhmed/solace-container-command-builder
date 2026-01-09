@@ -110,10 +110,6 @@ label {
   grid-column: 2 / -1;
 }
 
-/* Make a label+field pair take the full row (2 columns each) */
-.form-grid .span-3 { grid-column: 2 / -1; }
-.form-grid .break { grid-column: 1 / -1; height: 0; }
-
 /* HA table column sizing */
 .ha-table {
   width: 80%;
@@ -240,7 +236,7 @@ label {
 }
 
 .output-box button {
-  background: #0077b6;   /* Copy stays blue everywhere */
+  background: #0077b6;
   color: white;
   border: none;
   padding: 4px 10px;
@@ -378,4 +374,20 @@ textarea:focus {
   padding-top: 0 !important;
   padding-bottom: 0 !important;
   border-left-width: 0 !important;
+}
+
+/* Tiny fade for full sections (ports) */
+.fade-section {
+  opacity: 1;
+  transform: translateY(0);
+  max-height: 2000px;
+  overflow: hidden;
+  transition: opacity 220ms ease, transform 220ms ease, max-height 260ms ease;
+}
+
+.fade-hidden {
+  opacity: 0;
+  transform: translateY(-6px);
+  max-height: 0;
+  pointer-events: none;
 }
