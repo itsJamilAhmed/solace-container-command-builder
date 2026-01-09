@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Solace PubSub+ Container Run Command Builder</title>
+  <title>Solace Event Broker Container Run Command Builder</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
 
@@ -10,7 +10,7 @@
 
 <header class="header">
   <img src="solace-logo.png" alt="Solace" class="logo" />
-  <h1>PubSub+ Container Run Command Builder</h1>
+  <h1>Event Broker Container Run Command Builder</h1>
 </header>
 
 <main class="container">
@@ -45,6 +45,13 @@
         <option value="podman">podman</option>
       </select>
 
+      <!-- Row 1b: MacOS deploy -->
+      <label for="macos">Deploying on MacOS?</label>
+      <select id="macos" class="span-to-end">
+        <option value="no" selected>No</option>
+        <option value="yes">Yes</option>
+      </select>
+
       <!-- Row 2: Image path + version -->
       <label for="image_path">Image Repository Path</label>
       <input id="image_path" value="docker.io/solace/solace-pubsub-standard" />
@@ -63,6 +70,16 @@
 
       <label for="uid">Run as UID:GID</label>
       <input id="uid" placeholder="1000001:0" />
+    </div>
+
+    <!-- MacOS Important Note (shown only when macos=yes) -->
+    <div id="macos_note" class="tip-box callout callout-hidden" aria-hidden="true">
+      <div class="tip-title">Important Note</div>
+      <p>
+        MacOS reserves port <code>55555</code> to create a conflict with the Solace container. It will be port mapped instead to
+        <code>55554</code> in this case. As Solace samples by default refer to SMF port <code>55555</code>, make the adjustment to your
+        usage accordingly to <code>55554</code> instead. Due to this same reason, host mode networking is not possible to select.
+      </p>
     </div>
   </details>
 
@@ -95,7 +112,7 @@
     </label>
 
     <!-- Only show when runtime=podman AND network_mode=slirp4netns -->
-    <div id="storage_tip_podman_slirp" class="tip-box" style="display:none;">
+    <div id="storage_tip_podman_slirp" class="tip-box callout callout-hidden" aria-hidden="true">
       <div class="tip-title">💡 Top Tip</div>
       <p>
         If running rootless containers (with <code>podman</code>), take extra care to manage the directory permissions of the above path.
@@ -137,7 +154,7 @@
   </details>
 
   <!-- Ports -->
-  <details open class="card">
+  <details open class="card" id="ports_section">
     <summary>Protocols and Port Forwarding</summary>
     <p class="section-desc">As Solace is a multi-protocol broker, the services are provided over a number of different ports.</p>
     <p class="section-desc">Select the protocols you intend to use so that the port forwarding rules can be constructed between the container's network namespace and the host network.</p>
@@ -296,7 +313,7 @@
       </section>
     </div>
     <br/>
-    <small>Note: Additiomal ports related to communication between HA nodes are automatically included when HA mode is selected and are not explicitly shown here.</small>
+    <small>Note: Additional ports related to communication between HA nodes are automatically included when HA mode is selected and are not explicitly shown here.</small>
   </details>
 
   <!-- Scaling -->
@@ -318,7 +335,7 @@
     <p class="section-desc">For the simple standalone instance, provide a suitable name for the container to use in the generated run command.</p>
     <label>
       Broker and Container Name
-      <input id="standalone_name" value="solace1p" />
+      <input id="standalone_name" value="solace" />
     </label>
   </details>
 
@@ -440,7 +457,7 @@
         <pre id="output-monitor"></pre>
       </div>
 
-      <div id="ha-post-deploy-tips" class="tip-box">
+      <div id="ha-post-deploy-tips" class="tip-box callout callout-hidden" aria-hidden="true">
         <div class="tip-title">💡 Top Tip</div>
         <p>
           After deploying a High-Availability broker group, you need to designate one of the brokers as the config-sync 'leader' after all are successfully running.

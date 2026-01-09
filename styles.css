@@ -360,3 +360,22 @@ textarea:focus {
   line-height: 1.35;
   color: #333;
 }
+
+/* Fade transitions for callouts that show/hide */
+.callout {
+  overflow: hidden;
+  opacity: 1;
+  transform: translateY(0);
+  max-height: 800px;
+  transition: opacity 220ms ease, transform 220ms ease, max-height 220ms ease;
+}
+
+.callout-hidden {
+  opacity: 0;
+  transform: translateY(-6px);
+  max-height: 0;
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  border-left-width: 0 !important;
+}

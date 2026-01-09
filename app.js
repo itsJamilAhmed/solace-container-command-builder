@@ -11,6 +11,10 @@ const HA_PORT_BINDINGS = [
   { port: 8302, proto: "udp" }
 ];
 
+function isMacos() {
+  return ($("macos")?.value || "no").trim() === "yes";
+}
+
 function splitEnvString(str) {
   if (!str) return [];
   return str.split(/\s+(?=--env)/).map(s => s.trim()).filter(Boolean);
@@ -159,6 +163,49 @@ function tlsServerCertArgs() {
   return args;
 }
 
+/* ---------- UI sync helpers ---------- */
+
+function setCalloutVisible(el, visible) {
+  if (!el) return;
+  el.classList.toggle("callout-hidden", !visible);
+  el.setAttribute("aria-hidden", visible ? "false" : "true");
+}
+
+/* NEW: macos note + disable host mode */
+function syncMacosUi() {
+  const mac = isMacos();
+  const note = $("macos_note");
+  setCalloutVisible(note, mac);
+
+  const netSel = $("network_mode");
+  const hostOpt = netSel?.querySelector('option[value="host"]');
+
+  if (hostOpt) {
+    hostOpt.disabled = mac;
+  }
+
+  // If MacOS is yes, host mode cannot be selected; force bridge if currently host
+  if (mac && netSel && netSel.value === "host") {
+    netSel.value = "bridge";
+  }
+}
+
+/* NEW: storage tip only for podman + slirp4netns */
+function syncStorageTipVisibility() {
+  const tip = $("storage_tip_podman_slirp");
+  const runtime = ($("runtime")?.value || "").trim();
+  const net = ($("network_mode")?.value || "").trim();
+  setCalloutVisible(tip, runtime === "podman" && net === "slirp4netns");
+}
+
+/* NEW: hide protocols section when host network mode selected */
+function syncPortsSectionVisibility() {
+  const portsSection = $("ports_section");
+  const net = ($("network_mode")?.value || "").trim();
+  if (!portsSection) return;
+  portsSection.style.display = (net === "host") ? "none" : "block";
+}
+
 /* ---------- shared args (run commands) ---------- */
 
 function buildBaseArgs(isHA) {
@@ -170,14 +217,27 @@ function buildBaseArgs(isHA) {
     args.push(`--user ${$("uid").value}`);
   }
 
-  for (const p of getSelectedPorts()) {
-    args.push(`-p ${p}:${p}`);
-  }
-  if (isHA) {
-    addHaPorts(args);
+  const netMode = ($("network_mode")?.value || "bridge").trim();
+
+  // Port mappings are not needed for host mode
+  if (netMode !== "host") {
+    for (const p of getSelectedPorts()) {
+      // MacOS special case: map host 55554 -> container 55555
+      if (isMacos() && p === "55555") {
+        args.push(`-p 55554:55555`);
+      } else {
+        args.push(`-p ${p}:${p}`);
+      }
+    }
+    if (isHA) {
+      addHaPorts(args);
+    }
+  } else {
+    // still include HA node ports? no, host networking implies direct host ports, no -p
+    // (and you are hiding protocols section anyway)
   }
 
-  args.push(`--net ${$("network_mode").value}`);
+  args.push(`--net ${netMode}`);
 
   if ($("storage_path").value) {
     args.push(`--mount type=bind,source=${$("storage_path").value},target=/var/lib/solace`);
@@ -286,10 +346,7 @@ function composeEscape(str) {
 
 function parseScalingForCompose(raw) {
   const res = {
-    env: [],
-    ulimits: [],
-    shm_size: "",
-    unmapped: []
+    env: [], ulimits: [], shm_size: "", unmapped: []
   };
 
   if (!raw) return res;
@@ -301,12 +358,8 @@ function parseScalingForCompose(raw) {
 
     if (t === "--env") {
       const kv = tokens[i + 1];
-      if (kv) {
-        res.env.push(kv);
-        i++;
-      } else {
-        res.unmapped.push(t);
-      }
+      if (kv) { res.env.push(kv); i++; }
+      else { res.unmapped.push(t); }
       continue;
     }
 
@@ -321,15 +374,10 @@ function parseScalingForCompose(raw) {
       const uv = tokens[i + 1];
       if (uv) {
         const eq = uv.indexOf("=");
-        if (eq > 0) {
-          res.ulimits.push({ name: uv.slice(0, eq), value: uv.slice(eq + 1) });
-        } else {
-          res.unmapped.push(`--ulimit ${uv}`);
-        }
+        if (eq > 0) res.ulimits.push({ name: uv.slice(0, eq), value: uv.slice(eq + 1) });
+        else res.unmapped.push(`--ulimit ${uv}`);
         i++;
-      } else {
-        res.unmapped.push(t);
-      }
+      } else res.unmapped.push(t);
       continue;
     }
 
@@ -359,9 +407,7 @@ function collectEnvCommon(isHA) {
     if (kv) env.push(kv);
   });
 
-  if (isHA) {
-    env.push(`configsync_enable=yes`);
-  }
+  if (isHA) env.push(`configsync_enable=yes`);
 
   const scaling = parseScalingForCompose($("scaling_params").value);
   scaling.env.forEach(kv => env.push(kv));
@@ -371,9 +417,18 @@ function collectEnvCommon(isHA) {
 
 function collectPortsForCompose(isHA) {
   const bindings = [];
+  const netMode = ($("network_mode")?.value || "bridge").trim();
+
+  // Compose also does not publish ports with network_mode: host
+  if (netMode === "host") return [];
 
   for (const p of getSelectedPorts()) {
-    bindings.push(`${p}:${p}`);
+    // MacOS special case mapping
+    if (isMacos() && p === "55555") {
+      bindings.push(`55554:55555`);
+    } else {
+      bindings.push(`${p}:${p}`);
+    }
   }
 
   if (isHA) {
@@ -447,10 +502,7 @@ function generateComposeStandalone() {
   const image = imageRef();
 
   const { env: commonEnv, scaling } = collectEnvCommon(false);
-  const environment = [
-    ...commonEnv,
-    `routername=${name}`
-  ];
+  const environment = [...commonEnv, `routername=${name}`];
 
   const spec = {
     container_name: name,
@@ -476,19 +528,13 @@ function generateComposeHANode(role) {
 
   const { env: commonEnv, scaling } = collectEnvCommon(true);
 
-  const environment = [
-    ...commonEnv,
-    `redundancy_enable=true`,
-  ];
+  const environment = [...commonEnv, `redundancy_enable=true`];
 
   const pskMode = (document.getElementById("ha_psk_mode")?.value || "direct").trim();
   const keyValue = (document.getElementById("ha_psk_value")?.value || "").trim();
   const filePath = (document.getElementById("ha_psk_filepath")?.value || "").trim();
-  if (pskMode === "direct" && keyValue) {
-    environment.push(`redundancy_authentication_presharedkey_key=${keyValue}`);
-  } else if (pskMode === "file" && filePath) {
-    environment.push(`redundancy_authentication_presharedkey_keyfilepath=${filePath}`);
-  }
+  if (pskMode === "direct" && keyValue) environment.push(`redundancy_authentication_presharedkey_key=${keyValue}`);
+  else if (pskMode === "file" && filePath) environment.push(`redundancy_authentication_presharedkey_keyfilepath=${filePath}`);
 
   ["primary", "backup", "monitor"].forEach(r => {
     environment.push(`redundancy_group_node_${nodes[r].name}_connectvia=${nodes[r].host}`);
@@ -526,24 +572,11 @@ function syncHaPskModeUi() {
   row.style.display = (mode === "file") ? "block" : "none";
 }
 
-/* NEW: storage tip only for podman + slirp4netns */
-function syncStorageTipVisibility() {
-  const tip = document.getElementById("storage_tip_podman_slirp");
-  if (!tip) return;
-
-  const runtime = ($("runtime")?.value || "").trim();
-  const net = ($("network_mode")?.value || "").trim();
-
-  tip.style.display = (runtime === "podman" && net === "slirp4netns") ? "block" : "none";
-}
-
 function setHAVisibility(isHA) {
   $("standalone_section").style.display = isHA ? "none" : "block";
   $("ha_section").style.display = isHA ? "block" : "none";
 
-  if (isHA) {
-    $("ha_section").open = true;
-  }
+  if (isHA) $("ha_section").open = true;
 
   $("out-standalone").style.display = isHA ? "none" : "block";
   $("out-primary").style.display = isHA ? "block" : "none";
@@ -555,7 +588,7 @@ function setHAVisibility(isHA) {
   $("compose-out-backup").style.display = isHA ? "block" : "none";
   $("compose-out-monitor").style.display = isHA ? "block" : "none";
 
-  $("ha-post-deploy-tips").style.display = isHA ? "block" : "none";
+  setCalloutVisible($("ha-post-deploy-tips"), isHA);
 }
 
 function setOutputFormatVisibility() {
@@ -566,10 +599,18 @@ function setOutputFormatVisibility() {
 
 function build() {
   const isHA = $("mode").value === "ha";
+
+  // NEW: MacOS note + host disable/force bridge
+  syncMacosUi();
+
+  // NEW: if host, hide protocols section
+  syncPortsSectionVisibility();
+
+  // Existing
   setHAVisibility(isHA);
   setOutputFormatVisibility();
 
-  // keep storage tip in sync with runtime/network mode
+  // Existing but now uses fade callout
   syncStorageTipVisibility();
 
   document.querySelectorAll(".ports-btn-toggle[data-toggle-ports]").forEach(btn => {
