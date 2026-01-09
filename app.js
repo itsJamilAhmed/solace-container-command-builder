@@ -126,6 +126,22 @@ function recommendedPorts() {
   build();
 }
 
+function tlsOnlyPorts() {
+  document.querySelectorAll(".ports-table tr").forEach(row => {
+    const labelCell = row.querySelector(".ports-label");
+    const checkbox = row.querySelector('input[type="checkbox"][data-port]');
+
+    if (!labelCell || !checkbox) return;
+
+    if (labelCell.textContent.includes("(Plain)")) {
+      checkbox.checked = false;
+    }
+  });
+
+  build();
+}
+
+
 function setProtocolButtonLabel(btn, ports) {
   const boxes = ports
     .map(p => document.querySelector(`[data-port="${p}"]`))
@@ -153,6 +169,7 @@ function toggleProtocolFromAttr(btn) {
 
 window.clearPorts = clearPorts;
 window.recommendedPorts = recommendedPorts;
+window.tlsOnlyPorts = tlsOnlyPorts;
 window.toggleProtocolFromAttr = toggleProtocolFromAttr;
 
 /* ---------- TLS server cert helpers ---------- */
