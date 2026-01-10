@@ -17,6 +17,32 @@ body {
   height: 36px;
 }
 
+.header-spacer {
+  flex: 1 1 auto;
+}
+
+/* Small dark mode toggle button (header, top-right) */
+.dark-toggle {
+  font-size: 12px;
+  padding: 4px 10px;
+  border: 1px solid rgba(255,255,255,0.35);
+  background: rgba(255,255,255,0.10);
+  color: #ffffff;
+  border-radius: 999px;
+  cursor: pointer;
+  line-height: 1.4;
+  white-space: nowrap;
+}
+
+.dark-toggle:hover {
+  background: rgba(255,255,255,0.18);
+}
+
+.dark-toggle.is-on {
+  background: rgba(255,255,255,0.22);
+  border-color: rgba(255,255,255,0.55);
+}
+
 .container {
   max-width: 1100px;
   margin: 24px auto;
@@ -390,4 +416,116 @@ textarea:focus {
   transform: translateY(-6px);
   max-height: 0;
   pointer-events: none;
+}
+
+/* ---------------- Dark mode theme ---------------- */
+
+body.dark {
+  background: #0b1220;
+  color: #e6edf3;
+}
+
+/* Keep header brand but slightly deeper in dark mode */
+body.dark .header {
+  background: #001a2b;
+  color: #e6edf3;
+}
+
+body.dark .card {
+  background: #0f1b2d;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.35);
+}
+
+body.dark summary {
+  color: #e6edf3;
+}
+
+body.dark label {
+  color: #cfd8e3;
+}
+
+body.dark .section-desc {
+  color: #b7c3d0;
+}
+
+body.dark small {
+  color: #9fb0c0;
+}
+
+body.dark a {
+  color: #79b8ff;
+}
+
+body.dark code {
+  color: #e6edf3;
+}
+
+/* Inputs / selects / textareas */
+body.dark input,
+body.dark select,
+body.dark textarea {
+  background: #0b1627;
+  color: #e6edf3;
+  border-color: #2a3a52;
+}
+
+body.dark input:focus,
+body.dark select:focus,
+body.dark textarea:focus {
+  border-color: #79b8ff;
+}
+
+/* Ports group cards & rows */
+body.dark .ports-group {
+  background-color: #0b1627;
+  border-color: #2a3a52;
+}
+
+body.dark .ports-table tr:nth-child(even) {
+  background-color: rgba(255,255,255,0.03);
+}
+
+/* Standard small buttons */
+body.dark .ports-btn {
+  border-color: #2a3a52;
+  background: #0b1627;
+  color: #e6edf3;
+}
+
+body.dark .ports-btn:hover {
+  background: #0f1b2d;
+}
+
+/* Primary button */
+body.dark .ports-btn-primary {
+  border-color: #79b8ff;
+  background: rgba(121,184,255,0.14);
+}
+
+body.dark .ports-btn-primary:hover {
+  background: rgba(121,184,255,0.22);
+}
+
+/* Output box */
+body.dark .output-box {
+  border-color: #2a3a52;
+}
+
+body.dark .output-box header {
+  background: #0b1627;
+  color: #e6edf3;
+}
+
+/* Tip/callout box */
+body.dark .tip-box {
+  background: rgba(121,184,255,0.10);
+  border-left-color: #79b8ff;
+}
+
+body.dark .tip-box .tip-title {
+  color: #bfe0ff;
+}
+
+body.dark .tip-box p {
+  color: #d7e2ee;
 }

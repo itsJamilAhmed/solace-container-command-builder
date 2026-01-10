@@ -24,6 +24,12 @@ function splitEnvString(str) {
   return str.split(/\s+(?=--env)/).map(s => s.trim()).filter(Boolean);
 }
 
+function shellSingleQuote(value) {
+  // POSIX-safe single-quote escaping:
+  // abc'def  ->  'abc'\''def'
+  return `'${String(value).replace(/'/g, `'\\''`)}'`;
+}
+
 function wrapWithImageLast(args, imageArg) {
   const FORCE_NEWLINE_PREFIXES = [
     "--name=",
@@ -141,7 +147,6 @@ function tlsOnlyPorts() {
   build();
 }
 
-
 function setProtocolButtonLabel(btn, ports) {
   const boxes = ports
     .map(p => document.querySelector(`[data-port="${p}"]`))
@@ -253,6 +258,18 @@ function syncPortsSectionVisibility() {
   setFadedSectionVisible(wrap, net !== "host");
 }
 
+/* ---------- Dark mode ---------- */
+
+function setDarkMode(on) {
+  document.body.classList.toggle("dark", !!on);
+  const btn = $("dark_mode_toggle");
+  if (btn) {
+    btn.setAttribute("aria-pressed", on ? "true" : "false");
+    btn.classList.toggle("is-on", !!on);
+    btn.textContent = on ? "Dark mode: On" : "Dark mode: Off";
+  }
+}
+
 /* ---------- shared args (run commands) ---------- */
 
 function buildBaseArgs(isHA) {
@@ -290,7 +307,11 @@ function buildBaseArgs(isHA) {
   const value = ($("pw_value")?.value || "").trim();
 
   if (value) {
-    args.push(`--env username_admin_${method}=${value}`);
+    const renderedValue = (method === "encrypted_password")
+      ? shellSingleQuote(value)
+      : value;
+
+    args.push(`--env username_admin_${method}=${renderedValue}`);
     args.push(`--env username_admin_globalaccesslevel=admin`);
   }
 
@@ -387,6 +408,11 @@ function composeEscape(str) {
   return String(str).replace(/\\/g, "\\\\").replace(/"/g, '\\"');
 }
 
+function composeEscapeDollars(str) {
+  // Docker Compose interpolation escape: "$" must be written as "$$" to remain literal.
+  return String(str).replace(/\$/g, "$$");
+}
+
 function parseScalingForCompose(raw) {
   const res = { env: [], ulimits: [], shm_size: "", unmapped: [] };
   if (!raw) return res;
@@ -438,7 +464,11 @@ function collectEnvCommon(isHA) {
   const method = $("password_method").value;
   const value = ($("pw_value")?.value || "").trim();
   if (value) {
-    env.push(`username_admin_${method}=${value}`);
+    const renderedValue = (method === "encrypted_password")
+      ? composeEscapeDollars(value)
+      : value;
+
+    env.push(`username_admin_${method}=${renderedValue}`);
     env.push(`username_admin_globalaccesslevel=admin`);
   }
 
@@ -643,9 +673,8 @@ function build() {
   // Then dependent UI
   syncPortsSectionVisibility();
   syncStorageTipVisibility();
-
   syncEncryptedPasswordNoteVisibility();
-  
+
   setHAVisibility(isHA);
   setOutputFormatVisibility();
 
@@ -674,6 +703,23 @@ function build() {
 /* ---------- init ---------- */
 
 document.addEventListener("DOMContentLoaded", () => {
+  // Dark mode toggle wiring (does not affect build logic)
+  $("dark_mode_toggle")?.addEventListener("click", () => {
+    const on = !document.body.classList.contains("dark");
+    setDarkMode(on);
+  });
+
+  const prefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+  setDarkMode(prefersDark);
+
+  const mq = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)");
+  if (mq && typeof mq.addEventListener === "function") {
+    mq.addEventListener("change", (e) => setDarkMode(!!e.matches));
+  } else if (mq && typeof mq.addListener === "function") {
+    // Older Safari
+    mq.addListener((e) => setDarkMode(!!e.matches));
+  }
+
   recommendedPorts();
   generateHaPsk(60);
 

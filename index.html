@@ -11,6 +11,17 @@
 <header class="header">
   <img src="solace-logo.png" alt="Solace" class="logo" />
   <h1>Event Broker Container Run Command Builder</h1>
+
+  <!-- Dark mode toggle (top-right) -->
+  <div class="header-spacer"></div>
+  <button
+    id="dark_mode_toggle"
+    type="button"
+    class="dark-toggle"
+    aria-pressed="false"
+    title="Toggle dark mode">
+    Dark mode
+  </button>
 </header>
 
 <main class="container">
@@ -151,20 +162,20 @@
       Password Value / Path
       <input id="pw_value" placeholder="Enter password, path, or encrypted value" value="mysecret">
     </label>
-	
-	<!-- Only show when password_method=encrypted_password -->
-	<div id="pw_encrypted_note" class="tip-box callout callout-hidden" aria-hidden="true">
-	  <div class="tip-title">Important Note</div>
-	  <p>
-		The encrypted password must be a SHA-512 hash, generated using a random string <i>salt</i>. 
-	  </p>
-	  <p>
-		Provide it above in the format: <code>$6$&lt;salt string&gt;$&lt;password-hash&gt;</code> e.g. <code>$6$uE7L+w62wAI4$A0A5D01...1F65E441134AE01256</code>
-	  </p>
-	  <p>
-	    Online hash generators such as <a href="https://randommer.io/Hash/SHA512" target="_blank">https://randommer.io/Hash/SHA512</a> can be used for this.
-	  </p>
-	</div>
+
+    <!-- Only show when password_method=encrypted_password -->
+    <div id="pw_encrypted_note" class="tip-box callout callout-hidden" aria-hidden="true">
+      <div class="tip-title">Important Note</div>
+      <p>
+        The encrypted password must be a SHA-512 hash, generated using a random string <i>salt</i>.
+      </p>
+      <p>
+        Provide it above in the format: <code>$6$&lt;salt string&gt;$&lt;password-hash&gt;</code> e.g. <code>$6$uE7L+w62wAI4$A0A5D01...1F65E441134AE01256</code>
+      </p>
+      <p>
+        Online hash generators such as <a href="https://randommer.io/Hash/SHA512" target="_blank">https://randommer.io/Hash/SHA512</a> can be used for this.
+      </p>
+    </div>
   </details>
 
   <!-- Ports wrapper: fade this whole block -->
@@ -178,7 +189,7 @@
         <div class="ports-actions">
           <button type="button" class="ports-btn" onclick="clearPorts()" title="Unchecks all protocol ports.">Clear all</button>
           <button type="button" class="ports-btn ports-btn-primary" title="Selects the recommended minimum." onclick="recommendedPorts()">Recommended minimum</button>
-		  <button type="button" class="ports-btn" title="Unchecks all non-TLS (Plain) protocol ports."  onclick="tlsOnlyPorts()">TLS Secured Ports Only</button>
+          <button type="button" class="ports-btn" title="Unchecks all non-TLS (Plain) protocol ports."  onclick="tlsOnlyPorts()">TLS Secured Ports Only</button>
         </div>
       </div>
       <br/>
