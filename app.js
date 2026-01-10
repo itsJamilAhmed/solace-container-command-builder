@@ -24,6 +24,90 @@ function splitEnvString(str) {
   return str.split(/\s+(?=--env)/).map(s => s.trim()).filter(Boolean);
 }
 
+/* ---------- scaling parameter helpers ---------- */
+
+function clampInt(value, min, max) {
+  const n = parseInt(value, 10);
+  if (Number.isNaN(n)) return min;
+  return Math.min(max, Math.max(min, n));
+}
+
+function updateScalingEnvVar(key, value) {
+  const ta = $("scaling_params");
+  if (!ta) return;
+
+  const raw = String(ta.value || "").trim();
+  const token = `--env ${key}=`;
+
+  // Replace if present, else append at end (keeping existing ordering intact otherwise)
+  if (raw.includes(token)) {
+    ta.value = raw.replace(new RegExp(`--env\\s+${key}=[^\\s]+`), `--env ${key}=${value}`);
+  } else {
+    ta.value = raw ? `${raw} --env ${key}=${value}` : `--env ${key}=${value}`;
+  }
+}
+
+function removeScalingEnvVar(key) {
+  const ta = $("scaling_params");
+  if (!ta || !ta.value) return;
+
+  ta.value = ta.value
+    .replace(new RegExp(`\\s*--env\\s+${key}=[^\\s]+`), "")
+    .trim();
+}
+
+function syncMaxSpoolUsageFromTextarea() {
+  const ta = $("scaling_params");
+  const input = $("max_spool_usage_gb");
+  if (!ta || !input) return;
+
+  const m = String(ta.value || "").match(/--env\s+messagespool_maxspoolusage=(\d+)/);
+  if (m && m[1]) {
+    const mb = parseInt(m[1], 10);
+    const gb = mb / 1000;
+
+    // Preserve decimals (e.g. 1500 MB -> 1.5 GB)
+    // Avoid forcing a fixed decimal format that makes typing annoying.
+    input.value = String(gb);
+  } else {
+    input.value = "0";
+  }
+}
+
+function syncTextareaFromMaxSpoolUsage() {
+  const input = $("max_spool_usage_gb");
+  if (!input) return;
+
+  const raw = String(input.value ?? "").trim();
+
+  // If empty, reset to 0
+  if (raw === "") {
+    input.value = "0";
+    removeScalingEnvVar("messagespool_maxspoolusage");
+    return;
+  }
+
+  const n = Number(raw);
+
+  // Any non-numeric value → reset to 0
+  if (!Number.isFinite(n)) {
+    input.value = "0";
+    removeScalingEnvVar("messagespool_maxspoolusage");
+    return;
+  }
+
+  // Clamp to allowed range
+  const gb = Math.min(6000, Math.max(0, n));
+  if (gb !== n) input.value = String(gb);
+
+  if (gb === 0) {
+    removeScalingEnvVar("messagespool_maxspoolusage");
+  } else {
+    const mb = Math.round(gb * 1000);
+    updateScalingEnvVar("messagespool_maxspoolusage", mb);
+  }
+}
+
 function shellSingleQuote(value) {
   // POSIX-safe single-quote escaping:
   // abc'def  ->  'abc'\''def'
@@ -666,6 +750,9 @@ function setOutputFormatVisibility() {
 function build() {
   const isHA = $("mode").value === "ha";
 
+  // Keep max spool usage input and scaling textarea in sync
+  syncTextareaFromMaxSpoolUsage();
+
   // First: runtime + macos constraints that may change network_mode value
   syncRuntimeNetworkConstraints();
   syncMacosUi();
@@ -712,14 +799,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const prefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
   setDarkMode(prefersDark);
 
-  const mq = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)");
-  if (mq && typeof mq.addEventListener === "function") {
-    mq.addEventListener("change", (e) => setDarkMode(!!e.matches));
-  } else if (mq && typeof mq.addListener === "function") {
-    // Older Safari
-    mq.addListener((e) => setDarkMode(!!e.matches));
-  }
-
   recommendedPorts();
   generateHaPsk(60);
 
@@ -733,6 +812,22 @@ document.addEventListener("DOMContentLoaded", () => {
     build();
   });
   syncHaPskModeUi();
+
+  syncMaxSpoolUsageFromTextarea();
+
+  $("max_spool_usage_gb")?.addEventListener("input", () => {
+    syncTextareaFromMaxSpoolUsage();
+    build();
+  });
+
+  $("max_spool_usage_gb")?.addEventListener("blur", () => {
+    syncTextareaFromMaxSpoolUsage();
+    build();
+  });
+
+  // If scaling args are edited directly, keep the max spool usage input in sync
+  $("scaling_params")?.addEventListener("input", syncMaxSpoolUsageFromTextarea);
+  $("scaling_params")?.addEventListener("change", syncMaxSpoolUsageFromTextarea);
 
   document.getElementById("output_format")?.addEventListener("change", build);
 

@@ -194,6 +194,7 @@
       </div>
       <br/>
       <div class="ports-groups">
+        <!-- (unchanged ports groups...) -->
         <!-- SMF -->
         <section class="ports-group">
           <div class="ports-group-header">
@@ -348,13 +349,181 @@
   <details open class="card">
     <summary>Scaling Parameters</summary>
     <p class="section-desc">A Solace broker can be deployed in multiple <a href="https://docs.solace.com/Software-Broker/System-Scaling-Parameters.htm" target="_blank">scaling tiers</a>, with capacity limits and host resource usage matching the intended use-case.</p>
-    <p class="section-desc">Use the <a href="https://docs.solace.com/Admin-Ref/Resource-Calculator/pubsubplus-resource-calculator.html" target="_blank">System Resource Calculator</a> to input your desired usage and generate the correct scaling parameters to pass to the container on startup.</p>
-    <p class="section-desc">After using the calculator, enter the generated string into the field below. (Note: The current contents are suitable for a minimal size developer instance.)</p>
+    <p class="section-desc">Review the <a href="https://docs.solace.com/Admin-Ref/Resource-Calculator/pubsubplus-resource-calculator.html" target="_blank">System Resource Calculator</a> to input your desired usage and validate the correct system resources are available to the container for a successful start.</p>
+    <p class="section-desc">The scaling levels set below are for the minimal size developer instance.</p>
 
-    <label>
-      Scaling Arguments
-      <textarea id="scaling_params" rows="4">--ulimit core=-1 --ulimit nofile=2448:1048576 --shm-size=1g --env system_scaling_maxconnectioncount=100 --env system_scaling_maxqueuemessagecount=100 --env system_scaling_maxkafkabridgecount=0 --env system_scaling_maxkafkabrokerconnectioncount=0 --env system_scaling_maxbridgecount=25 --env system_scaling_maxsubscriptioncount=50000 --env system_scaling_maxguaranteedmessagesize=10 --env messagespool_maxspoolusage=1500</textarea>
-    </label>
+    <div class="spool-input-wrap">
+      <div class="spool-input-label">
+        <span>Max Message Spool Usage</span>
+        <span class="help-icon" title="Maximum amount of disk space that can be used to spool guaranteed messages.">?</span>
+      </div>
+
+      <div class="spool-input-control">
+        <input id="max_spool_usage_gb" type="number" min="0" max="6000" step="0.5" value="1.5" />
+        <span class="spool-unit">GB</span>
+      </div>
+    </div>
+
+    <div class="scaling-sliders">
+
+      <div class="scaling-row">
+        <div class="scaling-left">
+          <div class="scaling-label">Max Connections</div>
+          <div class="scaling-help" title="Scaling parameter: system_scaling_maxconnectioncount" aria-hidden="true">?</div>
+        </div>
+        <div class="scaling-right">
+          <div class="scaling-trackline">
+            <span class="scaling-badge" id="badge_maxconnections">100</span>
+
+            <div class="scaling-track-wrap">
+              <input id="sp_maxconnections" class="scaling-range" type="range" min="0" max="4" step="1" value="0" />
+              <div class="scaling-stop-dots" aria-hidden="true">
+                <span></span><span></span><span></span><span></span><span></span>
+              </div>
+            </div>
+          </div>
+          <div class="scaling-ticks">
+            <span>100</span><span>1,000</span><span>10,000</span><span>100,000</span><span>200,000</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="scaling-row">
+        <div class="scaling-left">
+          <div class="scaling-label">Max Queue Messages</div>
+          <div class="scaling-help" title="Scaling parameter: system_scaling_maxqueuemessagecount" aria-hidden="true">?</div>
+        </div>
+        <div class="scaling-right">
+          <div class="scaling-trackline">
+            <span class="scaling-badge" id="badge_maxqueuemsg">100M</span>
+
+            <div class="scaling-track-wrap">
+              <input id="sp_maxqueuemsg" class="scaling-range" type="range" min="0" max="2" step="1" value="0" />
+              <div class="scaling-stop-dots" aria-hidden="true">
+                <span></span><span></span><span></span>
+              </div>
+            </div>
+          </div>
+          <div class="scaling-ticks">
+            <span>100M</span><span>240M</span><span>3000M</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="scaling-row">
+        <div class="scaling-left">
+          <div class="scaling-label">Max Kafka Bridges</div>
+          <div class="scaling-help" title="Scaling parameter: system_scaling_maxkafkabridgecount" aria-hidden="true">?</div>
+        </div>
+        <div class="scaling-right">
+          <div class="scaling-trackline">
+            <span class="scaling-badge" id="badge_maxkafkabridges">0</span>
+
+            <div class="scaling-track-wrap">
+              <input id="sp_maxkafkabridges" class="scaling-range" type="range" min="0" max="3" step="1" value="0" />
+              <div class="scaling-stop-dots" aria-hidden="true">
+                <span></span><span></span><span></span><span></span>
+              </div>
+            </div>
+          </div>
+          <div class="scaling-ticks">
+            <span>0</span><span>10</span><span>50</span><span>200</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="scaling-row">
+        <div class="scaling-left">
+          <div class="scaling-label">Max Kafka Broker Connections</div>
+          <div class="scaling-help" title="Scaling parameter: system_scaling_maxkafkabrokerconnectioncount" aria-hidden="true">?</div>
+        </div>
+        <div class="scaling-right">
+          <div class="scaling-trackline">
+            <span class="scaling-badge" id="badge_maxkafkabrokerconns">0</span>
+
+            <div class="scaling-track-wrap">
+              <input id="sp_maxkafkabrokerconns" class="scaling-range" type="range" min="0" max="3" step="1" value="0" />
+              <div class="scaling-stop-dots" aria-hidden="true">
+                <span></span><span></span><span></span><span></span>
+              </div>
+            </div>
+          </div>
+          <div class="scaling-ticks">
+            <span>0</span><span>300</span><span>2,000</span><span>10,000</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="scaling-row">
+        <div class="scaling-left">
+          <div class="scaling-label">Max Bridges</div>
+          <div class="scaling-help" title="Scaling parameter: system_scaling_maxbridgecount" aria-hidden="true">?</div>
+        </div>
+        <div class="scaling-right">
+          <div class="scaling-trackline">
+            <span class="scaling-badge" id="badge_maxbridges">25</span>
+
+            <div class="scaling-track-wrap">
+              <input id="sp_maxbridges" class="scaling-range" type="range" min="0" max="2" step="1" value="0" />
+              <div class="scaling-stop-dots" aria-hidden="true">
+                <span></span><span></span><span></span>
+              </div>
+            </div>
+          </div>
+          <div class="scaling-ticks">
+            <span>25</span><span>500</span><span>5,000</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="scaling-row">
+        <div class="scaling-left">
+          <div class="scaling-label">Max Subscriptions</div>
+          <div class="scaling-help" title="Scaling parameter: system_scaling_maxsubscriptioncount" aria-hidden="true">?</div>
+        </div>
+        <div class="scaling-right">
+          <div class="scaling-trackline">
+            <span class="scaling-badge" id="badge_maxsubs">50,000</span>
+
+            <div class="scaling-track-wrap">
+              <input id="sp_maxsubs" class="scaling-range" type="range" min="0" max="2" step="1" value="0" />
+              <div class="scaling-stop-dots" aria-hidden="true">
+                <span></span><span></span><span></span>
+              </div>
+            </div>
+          </div>
+          <div class="scaling-ticks">
+            <span>50,000</span><span>500,000</span><span>5,000,000</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="scaling-row">
+        <div class="scaling-left">
+          <div class="scaling-label">Max Guaranteed Message Size</div>
+          <div class="scaling-help" title="Scaling parameter: system_scaling_maxguaranteedmessagesize" aria-hidden="true">?</div>
+        </div>
+        <div class="scaling-right">
+          <div class="scaling-trackline">
+            <span class="scaling-badge" id="badge_maxgmsize">10</span>
+
+            <div class="scaling-track-wrap">
+              <input id="sp_maxgmsize" class="scaling-range" type="range" min="0" max="1" step="1" value="0" />
+              <div class="scaling-stop-dots" aria-hidden="true">
+                <span></span><span></span>
+              </div>
+            </div>
+          </div>
+          <div class="scaling-ticks">
+            <span>10</span><span>30</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- The starting/default set of scaling parameters that are included, in a hidden textarea, to get modified by sliders -->
+    <textarea id="scaling_params" rows="4" class="scaling-hidden-textarea">--ulimit core=-1 --ulimit nofile=2448:1048576 --shm-size=1g --env system_scaling_maxconnectioncount=100 --env system_scaling_maxqueuemessagecount=100 --env system_scaling_maxkafkabridgecount=0 --env system_scaling_maxkafkabrokerconnectioncount=0 --env system_scaling_maxbridgecount=25 --env system_scaling_maxsubscriptioncount=50000 --env system_scaling_maxguaranteedmessagesize=10 --env messagespool_maxspoolusage=1500</textarea>
   </details>
 
   <!-- Standalone -->
