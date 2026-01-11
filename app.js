@@ -258,6 +258,79 @@ const PROTOCOL_PORTS = [
   { port: 2222, label: "CLI (SSH)" },
 ];
 
+function isMacos() {
+  return ($("macos")?.value || "no") === "yes";
+}
+
+function isPodman() {
+  return ($("runtime")?.value || "docker") === "podman";
+}
+
+function selectedNetworkMode() {
+  return $("network_mode")?.value || "bridge";
+}
+
+/* ---------- CSP-safe UI action wiring (no inline onclick) ---------- */
+
+function copyOut(preId) {
+  const el = document.getElementById(preId);
+  const text = (el && el.innerText) ? el.innerText : "";
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text);
+  }
+}
+
+function downloadOut(preId, filename) {
+  const el = document.getElementById(preId);
+  const text = (el && el.innerText) ? el.innerText : "";
+  const blob = new Blob([text], { type: "text/yaml;charset=utf-8" });
+
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename || "docker-compose.yml";
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+
+function initCspActionHandlers() {
+  document.addEventListener("click", (e) => {
+    const el = e.target.closest("[data-action]");
+    if (!el) return;
+
+    const action = el.getAttribute("data-action");
+    if (!action) return;
+
+    switch (action) {
+      case "clear-ports":
+        clearPorts();
+        break;
+      case "recommended-ports":
+        recommendedPorts();
+        break;
+      case "tls-only-ports":
+        tlsOnlyPorts();
+        break;
+      case "toggle-protocol":
+        toggleProtocolFromAttr(el);
+        break;
+      case "generate-ha-psk":
+        generateHaPsk();
+        break;
+      case "copy-out":
+        copyOut(el.getAttribute("data-target"));
+        break;
+      case "download-out":
+        downloadOut(el.getAttribute("data-target"), el.getAttribute("data-filename"));
+        break;
+      default:
+        break;
+    }
+  });
+}
+
 function wrapArgs(args, maxLen = WRAP_AT) {
   const lines = [];
   let line = "";
@@ -704,6 +777,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   mq?.addEventListener?.("change", e => setDarkMode(!!e.matches));
 
+  initCspActionHandlers();
+  
   recommendedPorts();
   generateHaPsk(60);
 
