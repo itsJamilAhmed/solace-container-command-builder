@@ -634,3 +634,98 @@ body.dark .spool-unit{
   color: #cfd8e3;
 }
 
+/* =========================
+   Dark mode (append only)
+   ========================= */
+
+body.dark {
+  background: #0b1220;
+  color: #e6edf3;
+}
+
+body.dark .card {
+  background: #0f1b2d;
+}
+
+body.dark summary,
+body.dark label {
+  color: #e6edf3;
+}
+
+body.dark .section-desc,
+body.dark small {
+  color: #b7c3d0;
+}
+
+body.dark input,
+body.dark select,
+body.dark textarea {
+  background: #0b1627;
+  color: #e6edf3;
+  border-color: #2a3a52;
+}
+
+body.dark .ports-group {
+  background: #0b1627;
+  border-color: #2a3a52;
+}
+
+body.dark .ports-table tr:nth-child(even) {
+  background: rgba(255,255,255,0.03);
+}
+
+body.dark .ports-btn {
+  background: #0b1627;
+  color: #e6edf3;
+  border-color: #2a3a52;
+}
+
+body.dark .ports-btn-primary {
+  background: rgba(121,184,255,0.18);
+  border-color: #79b8ff;
+}
+
+body.dark .tip-box {
+  background: rgba(121,184,255,0.10);
+  border-left-color: #79b8ff;
+}
+
+.ports-groups,
+body.dark .ports-groups {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(320px, 1fr));
+  gap: 14px;
+}
+
+@media (max-width: 900px) {
+  .ports-groups,
+  body.dark .ports-groups {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Dark mode: output boxes */
+body.dark .output-box {
+  border-color: #2a3a52;
+}
+
+body.dark .output-box header {
+  background: #0b1627;   /* darker header bar */
+  color: #e6edf3;        /* readable title text */
+  border-bottom: 1px solid #2a3a52;
+}
+
+body.dark .output-box header button {
+  background: #0f1b2d;
+  color: #e6edf3;
+  border: 1px solid #2a3a52;
+}
+
+body.dark .output-box header button:hover {
+  background: #13233a;
+}
+
+body.dark pre {
+  background: #0b1627;   /* match header tone */
+  color: #e6edf3;
+}
