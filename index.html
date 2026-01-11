@@ -187,19 +187,18 @@
 
       <div class="ports-toolbar">
         <div class="ports-actions">
-          <button type="button" class="ports-btn" onclick="clearPorts()" title="Unchecks all protocol ports.">Clear all</button>
-          <button type="button" class="ports-btn ports-btn-primary" title="Selects the recommended minimum." onclick="recommendedPorts()">Recommended minimum</button>
-          <button type="button" class="ports-btn" title="Unchecks all non-TLS (Plain) protocol ports."  onclick="tlsOnlyPorts()">TLS Secured Ports Only</button>
+          <button type="button" class="ports-btn" data-action="clear-ports" title="Unchecks all protocol ports.">Clear all</button>
+          <button type="button" class="ports-btn ports-btn-primary" title="Selects the recommended minimum." data-action="recommended-ports">Recommended minimum</button>
+          <button type="button" class="ports-btn" title="Unchecks all non-TLS (Plain) protocol ports." data-action="tls-only-ports">TLS Secured Ports Only</button>
         </div>
       </div>
       <br/>
       <div class="ports-groups">
-        <!-- (unchanged ports groups...) -->
         <!-- SMF -->
         <section class="ports-group">
           <div class="ports-group-header">
             <h3>Solace Messaging Protocol (SMF)</h3>
-            <button type="button" class="ports-btn ports-btn-toggle" title="Selects or clears all ports in this protocol group." data-toggle-ports="55555,55443" onclick="toggleProtocolFromAttr(this)">Select all</button>
+            <button type="button" class="ports-btn ports-btn-toggle" title="Selects or clears all ports in this protocol group." data-toggle-ports="55555,55443" data-action="toggle-protocol">Select all</button>
           </div>
           <table class="ports-table">
             <tr>
@@ -219,7 +218,7 @@
         <section class="ports-group">
           <div class="ports-group-header">
             <h3>Solace Messaging (SMF) over WebSocket</h3>
-            <button type="button" class="ports-btn ports-btn-toggle" title="Selects or clears all ports in this protocol group." data-toggle-ports="8008,1443" onclick="toggleProtocolFromAttr(this)">Select all</button>
+            <button type="button" class="ports-btn ports-btn-toggle" title="Selects or clears all ports in this protocol group." data-toggle-ports="8008,1443" data-action="toggle-protocol">Select all</button>
           </div>
           <table class="ports-table">
             <tr>
@@ -239,7 +238,7 @@
         <section class="ports-group">
           <div class="ports-group-header">
             <h3>AMQP</h3>
-            <button type="button" class="ports-btn ports-btn-toggle" title="Selects or clears all ports in this protocol group." data-toggle-ports="5672,5671" onclick="toggleProtocolFromAttr(this)">Select all</button>
+            <button type="button" class="ports-btn ports-btn-toggle" title="Selects or clears all ports in this protocol group." data-toggle-ports="5672,5671" data-action="toggle-protocol">Select all</button>
           </div>
           <table class="ports-table">
             <tr>
@@ -259,7 +258,7 @@
         <section class="ports-group">
           <div class="ports-group-header">
             <h3>MQTT</h3>
-            <button type="button" class="ports-btn ports-btn-toggle" title="Selects or clears all ports in this protocol group." data-toggle-ports="1883,8883,8000,8443" onclick="toggleProtocolFromAttr(this)">Select all</button>
+            <button type="button" class="ports-btn ports-btn-toggle" title="Selects or clears all ports in this protocol group." data-toggle-ports="1883,8883,8000,8443" data-action="toggle-protocol">Select all</button>
           </div>
           <table class="ports-table">
             <tr>
@@ -289,7 +288,7 @@
         <section class="ports-group">
           <div class="ports-group-header">
             <h3>REST/HTTP Messaging</h3>
-            <button type="button" class="ports-btn ports-btn-toggle" title="Selects or clears all ports in this protocol group." data-toggle-ports="9000,9443" onclick="toggleProtocolFromAttr(this)">Select all</button>
+            <button type="button" class="ports-btn ports-btn-toggle" title="Selects or clears all ports in this protocol group." data-toggle-ports="9000,9443" data-action="toggle-protocol">Select all</button>
           </div>
           <table class="ports-table">
             <tr>
@@ -309,7 +308,7 @@
         <section class="ports-group">
           <div class="ports-group-header">
             <h3>SEMP (Management API)</h3>
-            <button type="button" class="ports-btn ports-btn-toggle" title="Selects or clears all ports in this protocol group." data-toggle-ports="8080,1943" onclick="toggleProtocolFromAttr(this)">Select all</button>
+            <button type="button" class="ports-btn ports-btn-toggle" title="Selects or clears all ports in this protocol group." data-toggle-ports="8080,1943" data-action="toggle-protocol">Select all</button>
           </div>
           <table class="ports-table">
             <tr>
@@ -329,7 +328,7 @@
         <section class="ports-group">
           <div class="ports-group-header">
             <h3>Command Line Interface over SSH</h3>
-            <button type="button" class="ports-btn ports-btn-toggle" title="Selects or clears all ports in this protocol group." data-toggle-ports="2222" onclick="toggleProtocolFromAttr(this)">Select all</button>
+            <button type="button" class="ports-btn ports-btn-toggle" title="Selects or clears all ports in this protocol group." data-toggle-ports="2222" data-action="toggle-protocol">Select all</button>
           </div>
           <table class="ports-table">
             <tr>
@@ -606,7 +605,7 @@
     <input id="tls_servercertificate_passphrasefilepath" type="text" placeholder="/path/to/passphrase.txt" autocomplete="off" />
   </details>
 
-  <!-- OUTPUT -->
+<!-- OUTPUT -->
   <section class="card">
     <div class="output-header-row">
       <h2 class="output-title">Generated Output</h2>
@@ -625,7 +624,7 @@
       <div id="out-standalone" class="output-box">
         <header>
           Standalone node container start command
-          <button type="button" onclick="copyOut('output')">Copy</button>
+          <button type="button" data-action="copy-out" data-target="output">Copy</button>
         </header>
         <pre id="output"></pre>
       </div>
@@ -633,7 +632,7 @@
       <div id="out-primary" class="output-box" style="display:none">
         <header>
           Primary node container start command
-          <button type="button" onclick="copyOut('output-primary')">Copy</button>
+          <button type="button" data-action="copy-out" data-target="output-primary">Copy</button>
         </header>
         <pre id="output-primary"></pre>
       </div>
@@ -641,7 +640,7 @@
       <div id="out-backup" class="output-box" style="display:none">
         <header>
           Backup node container start command
-          <button type="button" onclick="copyOut('output-backup')">Copy</button>
+          <button type="button" data-action="copy-out" data-target="output-backup">Copy</button>
         </header>
         <pre id="output-backup"></pre>
       </div>
@@ -649,7 +648,7 @@
       <div id="out-monitor" class="output-box" style="display:none">
         <header>
           Monitor node container start command
-          <button type="button" onclick="copyOut('output-monitor')">Copy</button>
+          <button type="button" data-action="copy-out" data-target="output-monitor">Copy</button>
         </header>
         <pre id="output-monitor"></pre>
       </div>
@@ -671,8 +670,8 @@
         <header>
           Standalone node docker-compose.yml (deploy on standalone host)
           <div class="out-actions">
-            <button type="button" onclick="copyOut('compose-standalone')">Copy</button>
-            <button type="button" class="btn-secondary" onclick="downloadOut('compose-standalone','docker-compose.yml')">Download</button>
+            <button type="button" data-action="copy-out" data-target="compose-standalone">Copy</button>
+            <button type="button" class="btn-secondary" data-action="download-out" data-target="compose-standalone" data-filename="docker-compose.yml">Download</button>
           </div>
         </header>
         <pre id="compose-standalone"></pre>
@@ -682,8 +681,8 @@
         <header>
           Primary node docker-compose.yml (deploy on primary host)
           <div class="out-actions">
-            <button type="button" onclick="copyOut('compose-primary')">Copy</button>
-            <button type="button" class="btn-secondary" onclick="downloadOut('compose-primary','docker-compose-primary.yml')">Download</button>
+            <button type="button" data-action="copy-out" data-target="compose-primary">Copy</button>
+            <button type="button" class="btn-secondary" data-action="download-out" data-target="compose-primary" data-filename="docker-compose-primary.yml">Download</button>
           </div>
         </header>
         <pre id="compose-primary"></pre>
@@ -693,8 +692,8 @@
         <header>
           Backup node docker-compose.yml (deploy on backup host)
           <div class="out-actions">
-            <button type="button" onclick="copyOut('compose-backup')">Copy</button>
-            <button type="button" class="btn-secondary" onclick="downloadOut('compose-backup','docker-compose-backup.yml')">Download</button>
+            <button type="button" data-action="copy-out" data-target="compose-backup">Copy</button>
+            <button type="button" class="btn-secondary" data-action="download-out" data-target="compose-backup" data-filename="docker-compose-backup.yml">Download</button>
           </div>
         </header>
         <pre id="compose-backup"></pre>
@@ -704,8 +703,8 @@
         <header>
           Monitor node docker-compose.yml (deploy on monitor host)
           <div class="out-actions">
-            <button type="button" onclick="copyOut('compose-monitor')">Copy</button>
-            <button type="button" class="btn-secondary" onclick="downloadOut('compose-monitor','docker-compose-monitor.yml')">Download</button>
+            <button type="button" data-action="copy-out" data-target="compose-monitor">Copy</button>
+            <button type="button" class="btn-secondary" data-action="download-out" data-target="compose-monitor" data-filename="docker-compose-monitor.yml">Download</button>
           </div>
         </header>
         <pre id="compose-monitor"></pre>
@@ -716,28 +715,6 @@
 </main>
 
 <script src="app.js"></script>
-<script>
-  function copyOut(preId) {
-    const el = document.getElementById(preId);
-    const text = (el && el.innerText) ? el.innerText : "";
-    navigator.clipboard.writeText(text);
-  }
-
-  function downloadOut(preId, filename) {
-    const el = document.getElementById(preId);
-    const text = (el && el.innerText) ? el.innerText : "";
-    const blob = new Blob([text], { type: "text/yaml;charset=utf-8" });
-
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = filename || "docker-compose.yml";
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    URL.revokeObjectURL(url);
-  }
-</script>
 
 </body>
 </html>
