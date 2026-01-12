@@ -62,12 +62,19 @@
         <option value="no" selected>No</option>
         <option value="yes">Yes</option>
       </select>
+	  
+      <!-- Row 1c: Software Edition -->
+      <label for="software_edition">Software Edition</label>
+      <select id="software_edition" class="span-to-end">
+        <option value="standard" selected>Standard Edition</option>
+        <option value="enterprise">Enterprise Edition</option>
+      </select>	  
 
       <!-- Row 2: Image path + version -->
       <label for="image_path">Image Repository Path</label>
       <input id="image_path" value="docker.io/solace/solace-pubsub-standard" />
 
-      <label for="image_version">Image Version</label>
+      <label for="image_version">Image Version/Tag</label>
       <input id="image_version" value="latest" />
 
       <!-- Row 3: Restart policy + UID -->
@@ -92,6 +99,24 @@
         usage accordingly to <code>55554</code> instead. Due to this same reason, host mode networking is not possible to select.
       </p>
     </div>
+	
+	<!-- Enterprise Edition Important Note (shown only when enterprise selected) -->
+    <div id="enterprise_note" class="tip-box callout callout-hidden" aria-hidden="true">
+      <div class="tip-title">Important Note</div>
+      <p>
+        The Enterprise Edition of the Solace Broker is the purchased edition and not available from Docker Hub. 
+		It is provided as a compressed tar archive, containing a Docker repository of a single image.
+		You can download it using your customer credentials from <a href="https://products.solace.com/prods/PubSub_Ent/" target="_blank">https://products.solace.com/</a>
+      </p>
+	  <p>
+        The image can be loaded into a container repository used by your enterprise, to then provide the full path above.
+		Alternatively, use the <code>docker</code> or <code>podman</code> load command to use a local machine container storage.
+      </p>
+	  <p>
+        e.g. <code>docker load -i /path/to/downloaded/solace-pubsub-enterprise-10.25.x.x-docker.tar.gz</code>
+      </p>
+    </div>
+	
   </details>
 
   <!-- Networking -->
@@ -536,7 +561,7 @@
   </details>
 
   <!-- HA -->
-  <details id="ha_section" class="card" style="display:none">
+  <details open id="ha_section" class="card" style="display:none">
     <summary>High Availability Configuration</summary>
     <p class="section-desc">When deploying a <a href="https://docs.solace.com/Features/HA-Redundancy/SW-Broker-Redundancy-and-Fault-Tolerance.htm" target="_blank">High Availability triplet</a> of Solace containers, they are configured with awareness of each other in terms of name and network location.</p>
     <p class="section-desc">Provide a suitable name for each of the nodes to deploy, along with an IP address or fully qualified domain name (FQDN) on how each node may connect to the other 2.</p>
@@ -710,6 +735,7 @@
         <pre id="compose-monitor"></pre>
       </div>
     </div>
+
   </section>
 
 </main>
