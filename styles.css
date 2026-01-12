@@ -729,3 +729,36 @@ body.dark pre {
   background: #0b1627;   /* match header tone */
   color: #e6edf3;
 }
+
+/* Dark mode: link contrast */
+body.dark a {
+  color: #79b8ff;              /* accessible, calm blue */
+  text-decoration-color: rgba(121, 184, 255, 0.6);
+}
+
+body.dark a:hover,
+body.dark a:focus {
+  color: #a6d1ff;
+  text-decoration-color: rgba(166, 209, 255, 0.85);
+}
+
+/* Dark mode: callout / tip readability */
+body.dark .callout,
+body.dark .tip-box {
+  color: #e6edf3; /* main readable text */
+}
+
+body.dark .callout p,
+body.dark .tip-box p {
+  color: #d2dbea;
+}
+
+body.dark .callout code,
+body.dark .tip-box code {
+  background: rgba(255, 255, 255, 0.08);
+  color: #e6edf3;
+}
+
+body.dark .callout .tip-title {
+  color: #ffffff;
+}
