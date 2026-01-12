@@ -245,6 +245,9 @@ function generateHANode(role) {
     args.push(`--env username_admin_${method}=${value}`);
     args.push(`--env username_admin_globalaccesslevel=admin`);
   }
+  
+  args.push(`--env redundancy_enable=true`);
+  args.push(`--env configsync_enable=yes`);
 
   const raw = ($("scaling_params")?.value || "").trim();
   if (raw) {
