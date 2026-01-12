@@ -762,3 +762,10 @@ body.dark .tip-box code {
 body.dark .callout .tip-title {
   color: #ffffff;
 }
+
+/* Dark mode: scaling value badges use Solace blue */
+body.dark .scaling-badge {
+  background-color: rgba(121, 184, 255, 0.18); /* same blue family as links */
+  color: #e6f1ff;                              /* high-contrast text */
+  border-color: rgba(121, 184, 255, 0.45);
+}
