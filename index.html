@@ -374,7 +374,7 @@
     <summary>Scaling Parameters</summary>
     <p class="section-desc">A Solace broker can be deployed in multiple <a href="https://docs.solace.com/Software-Broker/System-Scaling-Parameters.htm" target="_blank">scaling tiers</a>, with capacity limits and host resource usage matching the intended use-case.</p>
     <p class="section-desc">Review the <a href="https://docs.solace.com/Admin-Ref/Resource-Calculator/pubsubplus-resource-calculator.html" target="_blank">System Resource Calculator</a> to input your desired usage and validate the correct system resources are available to the container for a successful start.</p>
-    <p class="section-desc">The scaling levels set below are for the minimal size developer instance.</p>
+    <p class="section-desc">The default scaling levels set below are for the minimal size developer instance.</p>
 
     <div class="spool-input-wrap">
       <div class="spool-input-label">
@@ -400,6 +400,7 @@
             <span class="scaling-badge" id="badge_maxconnections">100</span>
 
             <div class="scaling-track-wrap">
+			  <span class="enterprise-label" aria-hidden="true">Enterprise</span>
               <input id="sp_maxconnections" class="scaling-range" type="range" min="0" max="4" step="1" value="0" />
               <div class="scaling-stop-dots" aria-hidden="true">
                 <span></span><span></span><span></span><span></span><span></span>
@@ -422,6 +423,7 @@
             <span class="scaling-badge" id="badge_maxqueuemsg">100M</span>
 
             <div class="scaling-track-wrap">
+			  <span class="enterprise-label" aria-hidden="true">Enterprise</span>
               <input id="sp_maxqueuemsg" class="scaling-range" type="range" min="0" max="2" step="1" value="0" />
               <div class="scaling-stop-dots" aria-hidden="true">
                 <span></span><span></span><span></span>
@@ -444,6 +446,7 @@
             <span class="scaling-badge" id="badge_maxkafkabridges">0</span>
 
             <div class="scaling-track-wrap">
+			  <span class="enterprise-label" aria-hidden="true">Enterprise</span>
               <input id="sp_maxkafkabridges" class="scaling-range" type="range" min="0" max="3" step="1" value="0" />
               <div class="scaling-stop-dots" aria-hidden="true">
                 <span></span><span></span><span></span><span></span>
@@ -466,6 +469,7 @@
             <span class="scaling-badge" id="badge_maxkafkabrokerconns">0</span>
 
             <div class="scaling-track-wrap">
+			  <span class="enterprise-label" aria-hidden="true">Enterprise</span>
               <input id="sp_maxkafkabrokerconns" class="scaling-range" type="range" min="0" max="3" step="1" value="0" />
               <div class="scaling-stop-dots" aria-hidden="true">
                 <span></span><span></span><span></span><span></span>
@@ -488,6 +492,7 @@
             <span class="scaling-badge" id="badge_maxbridges">25</span>
 
             <div class="scaling-track-wrap">
+			  <span class="enterprise-label" aria-hidden="true">Enterprise</span>
               <input id="sp_maxbridges" class="scaling-range" type="range" min="0" max="2" step="1" value="0" />
               <div class="scaling-stop-dots" aria-hidden="true">
                 <span></span><span></span><span></span>
@@ -510,6 +515,7 @@
             <span class="scaling-badge" id="badge_maxsubs">50,000</span>
 
             <div class="scaling-track-wrap">
+			  <span class="enterprise-label" aria-hidden="true">Enterprise</span>
               <input id="sp_maxsubs" class="scaling-range" type="range" min="0" max="2" step="1" value="0" />
               <div class="scaling-stop-dots" aria-hidden="true">
                 <span></span><span></span><span></span>
@@ -532,6 +538,7 @@
             <span class="scaling-badge" id="badge_maxgmsize">10</span>
 
             <div class="scaling-track-wrap">
+			  <span class="enterprise-label" aria-hidden="true">Enterprise</span>
               <input id="sp_maxgmsize" class="scaling-range" type="range" min="0" max="1" step="1" value="0" />
               <div class="scaling-stop-dots" aria-hidden="true">
                 <span></span><span></span>
@@ -545,7 +552,11 @@
       </div>
 
     </div>
-
+	<div id="scaling_limit_note" class="tip-box callout callout-hidden" aria-hidden="true">
+	  <div class="tip-title">Important Note</div>
+	  <p>Standard Edition has lower message spool and scaling limits. If you need higher limits, select Enterprise Edition.</p>
+	</div>
+	
     <!-- The starting/default set of scaling parameters that are included, in a hidden textarea, to get modified by sliders -->
     <textarea id="scaling_params" rows="4" class="scaling-hidden-textarea">--ulimit core=-1 --ulimit nofile=2448:1048576 --shm-size=1g --env system_scaling_maxconnectioncount=100 --env system_scaling_maxqueuemessagecount=100 --env system_scaling_maxkafkabridgecount=0 --env system_scaling_maxkafkabrokerconnectioncount=0 --env system_scaling_maxbridgecount=25 --env system_scaling_maxsubscriptioncount=50000 --env system_scaling_maxguaranteedmessagesize=10 --env messagespool_maxspoolusage=1500</textarea>
   </details>

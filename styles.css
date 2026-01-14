@@ -769,3 +769,118 @@ body.dark .scaling-badge {
   color: #e6f1ff;                              /* high-contrast text */
   border-color: rgba(121, 184, 255, 0.45);
 }
+
+
+.scaling-track-wrap{
+  --std-cutoff: 100%;
+  --std-cutoff-px: 0px; /* set by JS */
+}
+
+/* Stronger Enterprise headroom band */
+.scaling-track-wrap::before {
+  content: "";
+  position: absolute;
+  left: 10px;
+  right: 10px;
+  top: calc(50% - 6px);   /* raise above main track */
+  height: 12px;           /* thicker */
+  border-radius: 999px;
+  z-index: 0;
+  pointer-events: none;
+
+  background: linear-gradient(
+    to right,
+    rgba(180, 180, 180, 0.35) 0%,
+    rgba(180, 180, 180, 0.35) var(--std-cutoff),
+    rgba(0, 122, 204, 0.55) var(--std-cutoff),
+    rgba(0, 122, 204, 0.55) 100%
+  );
+}
+
+/* Dark mode tuning */
+body.dark .scaling-track-wrap::before {
+  background: linear-gradient(
+    to right,
+    rgba(120, 130, 140, 0.25) 0%,
+    rgba(120, 130, 140, 0.25) var(--std-cutoff),
+    rgba(121, 184, 255, 0.55) var(--std-cutoff),
+    rgba(121, 184, 255, 0.55) 100%
+  );
+  box-shadow: 0 0 6px rgba(121, 184, 255, 0.35);
+}
+
+
+.scaling-track-wrap {
+  --enterprise-label-left: 0px;
+}
+
+/* Label pill */
+.scaling-track-wrap .enterprise-label{
+  position: absolute;
+  top: -12px; /* keep inside row to avoid overlap */
+  left: var(--enterprise-label-left);
+  transform: translateX(14px); /* push to the RIGHT of the cutoff */
+  
+  padding: 1px 6px;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1;
+  border-radius: 10px;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+
+  background: rgba(0, 122, 204, 0.50);
+  color: #0a4f8a;
+  border: 1px solid rgba(0, 122, 204, 0.75);
+}
+
+
+.scaling-track-wrap .enterprise-label::after{
+  content: "";
+  position: absolute;
+  left: -6px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 0;
+  height: 0;
+  border-top: 5px solid transparent;
+  border-bottom: 5px solid transparent;
+  border-right: 6px solid rgba(0, 122, 204, 0.55);
+}
+body.dark .scaling-track-wrap .enterprise-label::after{
+  border-right-color: rgba(121, 184, 255, 0.65);
+}
+
+/* Dark mode tuning */
+body.dark .scaling-track-wrap .enterprise-label {
+  background: rgba(121, 184, 255, 0.50);
+  color: #0a4f8a;
+  border-color: rgba(121, 184, 255, 0.85);
+}
+body.dark .scaling-track-wrap .enterprise-label::after {
+  border-top-color: rgba(121, 184, 255, 0.65);
+}
+
+/* Only show label if:
+   - the slider has an enterprise zone (has-enterprise-label)
+   - AND user has attempted to exceed a standard limit at least once (show-enterprise-labels) */
+.scaling-track-wrap.has-enterprise-label .enterprise-label {
+  opacity: 0;
+}
+body.show-enterprise-labels .scaling-track-wrap.has-enterprise-label .enterprise-label {
+  opacity: 1;
+}
+
+/* Ensure label sits above track + slider */
+.scaling-track-wrap .enterprise-label {
+  z-index: 5;
+}
+
+.scaling-track-wrap::before { z-index: 0; }
+.scaling-track-wrap::after  { z-index: 1; } /* cutoff marker if you have it */
+.scalaling-stop-dots { z-index: 2; }
+.scaling-track-wrap .scaling-range { z-index: 3; }
+
+.scaling-track-wrap { position: relative; }
