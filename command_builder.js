@@ -251,9 +251,8 @@ function generateHANode(role) {
     args.push(`--env username_admin_globalaccesslevel=admin`);
   }
   
-  args.push(`--env redundancy_enable=true`);
+  args.push(`--env redundancy_enable=yes`);
   args.push(`--env configsync_enable=yes`);
-  //args.push(`--env configsync_enable=yes`);
 
   const raw = ($("scaling_params")?.value || "").trim();
   if (raw) {
@@ -517,7 +516,7 @@ function generateComposeHANode(role) {
 
   const { env: commonEnv, scaling } = collectEnvCommon(true);
 
-  const environment = [...commonEnv, `redundancy_enable=true`];
+  const environment = [...commonEnv, `redundancy_enable=yes`];
 
   const pskMode = (document.getElementById("ha_psk_mode")?.value || "direct").trim();
   const keyValue = (document.getElementById("ha_psk_value")?.value || "").trim();
