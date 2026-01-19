@@ -214,7 +214,7 @@ function haPskEnvArg() {
   }
   const v = ($("ha_psk_value")?.value || "").trim();
   if (!v) return "";
-  return `--env redundancy_authentication_presharedkey=${v}`;
+  return `--env redundancy_authentication_presharedkey_key=${v}`;
 }
 
 function generateHANode(role) {
