@@ -175,9 +175,60 @@ function setBadgeText(badgeId, text) {
   if (b) b.textContent = text;
 }
 
-function attachScalingSliderHandlers() {
-  // NOTE: these IDs must match your existing HTML.
-  const sliders = [
+/* =========================================================
+   Scaling limits by software edition (Stage 1: logic only)
+   ========================================================= */
+
+const STANDARD_SCALING_LIMITS = {
+  system_scaling_maxconnectioncount: 1000,
+  system_scaling_maxqueuemessagecount: 240,
+  system_scaling_maxkafkabrokerconnectioncount: 10000,
+  system_scaling_maxbridgecount: 25,
+  system_scaling_maxsubscriptioncount: 500000,
+  system_scaling_maxguaranteedmessagesize: 30,
+};
+
+// Max spool usage is entered in GB in the UI (converted to MB in scaling_params)
+const STANDARD_MAX_SPOOL_GB = 800;
+const ENTERPRISE_MAX_SPOOL_GB = 6000;
+
+let _standardScalingLimitExceededOnce = false;
+
+/**
+ * Marks that the user attempted to exceed a Standard Edition limit.
+ * Returns true only the first time per page load.
+ */
+function noteStandardLimitExceededOnce() {
+  if (_standardScalingLimitExceededOnce) return false;
+  _standardScalingLimitExceededOnce = true;
+  return true;
+}
+
+function enableEnterpriseLabelsOnce() {
+  document.body.classList.add("show-enterprise-labels");
+}
+
+function getSoftwareEdition() {
+  return ($("software_edition")?.value || "standard").trim();
+}
+
+function isStandardEdition() {
+  return getSoftwareEdition() !== "enterprise";
+}
+
+function getAllowedIndexForStandard(cfg) {
+  const limit = STANDARD_SCALING_LIMITS[cfg.key];
+  if (typeof limit !== "number") return null;
+
+  // Choose the highest stop <= limit (handles cases where limit is between stops)
+  let allowed = 0;
+  for (let i = 0; i < cfg.values.length; i++) {
+    if (cfg.values[i] <= limit) allowed = i;
+  }
+  return allowed;
+}
+
+const SCALING_SLIDERS = [
     { sliderId: "sp_maxconnections",   badgeId: "badge_maxconnections",   key: "system_scaling_maxconnectioncount",            values: [100, 1000, 10000, 100000, 200000], labels: ["100","1,000","10,000","100,000","200,000"] },
     { sliderId: "sp_maxqueuemsg",      badgeId: "badge_maxqueuemsg",      key: "system_scaling_maxqueuemessagecount",         values: [100, 240, 3000],                    labels: ["100M","240M","3000M"] },
     { sliderId: "sp_maxkafkabridges",  badgeId: "badge_maxkafkabridges",  key: "system_scaling_maxkafkabridgecount",          values: [0, 10, 50, 200],                     labels: ["0","10","50","200"] },
@@ -187,20 +238,185 @@ function attachScalingSliderHandlers() {
     { sliderId: "sp_maxgmsize",        badgeId: "badge_maxgmsize",        key: "system_scaling_maxguaranteedmessagesize",     values: [10, 30],                             labels: ["10","30"] },
   ];
 
-  sliders.forEach(cfg => {
+function setEnterpriseTrackCueForSliderOLD(slider, cfg, allowedIdx) {
+  const wrap = slider.closest(".scaling-track-wrap");
+  if (!wrap) return;
+
+  const maxIdx = cfg.values.length - 1;
+
+  // Enterprise selected OR no standard limit -> no special zone, no marker
+  if (!isStandardEdition() || allowedIdx === null || allowedIdx >= maxIdx) {
+    wrap.style.setProperty("--std-cutoff", "100%");
+    wrap.style.setProperty("--std-cutoff-px", "0px");
+    wrap.style.setProperty("--show-cutoff", "0");
+    wrap.style.setProperty("--marker-opacity", "0");
+    wrap.style.setProperty("--marker-on", "0");
+    wrap.style.setProperty("--marker", "0");
+    wrap.style.setProperty("--markerVisible", "0");
+    wrap.style.setProperty("--cutoff-visible", "0");
+    wrap.style.setProperty("--cutoff-opacity", "0");
+    wrap.style.setProperty("--cutoff", "100%");
+    wrap.style.setProperty("--cutoff-marker", "0");
+    wrap.style.setProperty("--cutoff-marker-opacity", "0");
+    wrap.style.setProperty("--cutoffMarker", "0");
+    // use the ::after opacity directly
+    wrap.style.setProperty("--after-opacity", "0");
+    wrap.style.setProperty("--marker", "0");
+    wrap.style.setProperty("--markerOpacity", "0");
+    wrap.style.setProperty("--markerOn", "0");
+    wrap.style.setProperty("--marker-on", "0");
+    wrap.style.setProperty("--marker_opacity", "0");
+    wrap.style.setProperty("--marker-on", "0");
+    wrap.style.setProperty("--markerOpacity", "0");
+    wrap.style.setProperty("--markervisible", "0");
+    wrap.style.setProperty("--markerVisible", "0");
+    wrap.style.setProperty("--marker-opacity", "0");
+    wrap.style.setProperty("--marker", "0");
+    wrap.style.setProperty("--markerOn", "0");
+    wrap.style.setProperty("--marker-on", "0");
+    wrap.style.setProperty("--markeropacity", "0");
+    wrap.style.setProperty("--marker_visible", "0");
+    wrap.style.setProperty("--marker", "0");
+    wrap.style.setProperty("--marker", "0");
+    wrap.style.setProperty("--marker", "0");
+    // simplest: directly control ::after via inline style using CSS var + class:
+    wrap.classList.remove("has-cutoff-marker");
+    return;
+  }
+
+  const pct = (allowedIdx / maxIdx) * 100;
+  wrap.style.setProperty("--std-cutoff", `${pct}%`);
+
+  // Convert to px so ::after can position precisely inside the left/right padding
+  const leftPad = 10;
+  const rightPad = 10;
+  const rect = wrap.getBoundingClientRect();
+  const usable = Math.max(0, rect.width - leftPad - rightPad);
+  const px = leftPad + (usable * (pct / 100));
+
+  wrap.style.setProperty("--std-cutoff-px", `${px}px`);
+  wrap.classList.add("has-cutoff-marker");
+}
+
+
+function setEnterpriseTrackCueForSlider(slider, cfg, allowedIdx) {
+  const wrap = slider.closest(".scaling-track-wrap");
+  if (!wrap) return;
+
+  const maxIdx = cfg.values.length - 1;
+
+  // Enterprise selected OR no standard limit -> no special zone/marker/label
+  if (!isStandardEdition() || allowedIdx === null || allowedIdx >= maxIdx) {
+    wrap.style.setProperty("--std-cutoff", "100%");
+    wrap.classList.remove("has-cutoff-marker");
+    wrap.classList.remove("has-enterprise-label");
+    return;
+  }
+
+  const pct = (allowedIdx / maxIdx) * 100;
+  wrap.style.setProperty("--std-cutoff", `${pct}%`);
+
+  // Convert % to px for marker + label position inside the padded track area
+  const leftPad = 10;
+  const rightPad = 10;
+  const rect = wrap.getBoundingClientRect();
+  const usable = Math.max(0, rect.width - leftPad - rightPad);
+  const px = leftPad + (usable * (pct / 100));
+
+  wrap.style.setProperty("--std-cutoff-px", `${px}px`);
+
+  //wrap.style.setProperty("--enterprise-label-left", `${px}px`);  
+  const maxLeft = rect.width - 10; // keep within wrap padding
+  wrap.style.setProperty("--enterprise-label-left", `${Math.min(px, maxLeft)}px`);
+
+  wrap.classList.add("has-cutoff-marker");
+  wrap.classList.add("has-enterprise-label");
+}
+
+function attachScalingSliderHandlers() {
+  // NOTE: these IDs must match your existing HTML.
+  
+
+  SCALING_SLIDERS.forEach(cfg => {
     const slider = $(cfg.sliderId);
     if (!slider) return;
 
     const apply = () => {
-      const idx = Math.max(0, Math.min(cfg.values.length - 1, parseInt(slider.value, 10) || 0));
+      let idx = Math.max(0, Math.min(cfg.values.length - 1, parseInt(slider.value, 10) || 0));
+
+      let allowedIdx = null;
+	  
+      if (isStandardEdition()) {
+        allowedIdx = getAllowedIndexForStandard(cfg);
+        if (allowedIdx !== null && idx > allowedIdx) {
+          // User attempted to exceed a Standard Edition limit -> snap back
+          if (noteStandardLimitExceededOnce()) {
+              setCalloutVisible("scaling_limit_note", true);
+			  enableEnterpriseLabelsOnce(); // <- show Enterprise labels after first exceed attempt
+          }
+          idx = allowedIdx;
+          slider.value = String(idx);
+        }
+      }
+	  
+	  setEnterpriseTrackCueForSlider(slider, cfg, allowedIdx);
+
       setBadgeText(cfg.badgeId, cfg.labels[idx]);
       updateScalingEnvVar(cfg.key, cfg.values[idx]);
       build();
     };
 
+    slider._applyScaling = apply;
     slider.addEventListener("input", apply);
     slider.addEventListener("change", apply);
   });
+}
+
+
+function enforceEditionScalingLimits() {
+  // Clamp all scaling sliders (and their textarea envs) when switching editions.
+  if (typeof SCALING_SLIDERS === "undefined") return;
+
+  SCALING_SLIDERS.forEach(cfg => {
+    const slider = $(cfg.sliderId);
+    if (!slider) return;
+
+    let idx = Math.max(0, Math.min(cfg.values.length - 1, parseInt(slider.value, 10) || 0));
+
+    if (isStandardEdition()) {
+      const allowedIdx = getAllowedIndexForStandard(cfg);
+      if (allowedIdx !== null && cfg.values[idx] > STANDARD_SCALING_LIMITS[cfg.key]) {
+        if (noteStandardLimitExceededOnce()) {
+			setCalloutVisible("scaling_limit_note", true);
+			enableEnterpriseLabelsOnce(); // <- show Enterprise labels after first exceed attempt
+        }
+        idx = allowedIdx;
+        slider.value = String(idx);
+      }
+    }
+
+    // Apply badge + textarea sync for the (possibly clamped) idx
+    setBadgeText(cfg.badgeId, cfg.labels[idx]);
+    updateScalingEnvVar(cfg.key, cfg.values[idx]);
+  });
+
+  // Clamp max spool usage input (GB) based on edition
+  const spool = $("max_spool_usage_gb");
+  if (spool) {
+    const raw = String(spool.value ?? "").trim();
+    const n = Number(raw);
+    if (Number.isFinite(n)) {
+      const maxGb = isStandardEdition() ? STANDARD_MAX_SPOOL_GB : ENTERPRISE_MAX_SPOOL_GB;
+      if (n > maxGb) {
+        if (noteStandardLimitExceededOnce()) {
+			setCalloutVisible("scaling_limit_note", true);
+			enableEnterpriseLabelsOnce(); // <- show Enterprise labels after first exceed attempt
+        }
+        spool.value = String(maxGb);
+        syncTextareaFromMaxSpoolUsage();
+      }
+    }
+  }
 }
 
 function syncMaxSpoolUsageFromTextarea() {
@@ -235,7 +451,15 @@ function syncTextareaFromMaxSpoolUsage() {
     return;
   }
 
-  const gb = Math.min(6000, Math.max(0, n));
+  const maxGb = isStandardEdition() ? STANDARD_MAX_SPOOL_GB : ENTERPRISE_MAX_SPOOL_GB;
+  const gb = Math.min(maxGb, Math.max(0, n));
+
+  if (isStandardEdition() && n > maxGb) {
+    if (noteStandardLimitExceededOnce()) {
+      // Stage 2 will show an "Important Note" callout here.
+    }
+  }
+
   if (gb !== n) input.value = String(gb);
 
   if (gb === 0) {
@@ -573,6 +797,33 @@ function initOnceBuilderReady() {
   });
 
   $("output_format")?.addEventListener("change", build);
+
+  $("software_edition")?.addEventListener("change", () => {
+    // Repaint all tracks based on the selected edition
+    SCALING_SLIDERS.forEach(cfg => {
+      const slider = $(cfg.sliderId);
+      if (!slider) return;
+
+      // Re-run clamp + badge + env update
+      if (typeof slider._applyScaling === "function") {
+        slider._applyScaling();
+      }
+	  
+	  enforceEditionScalingLimits();
+	
+      const allowedIdx = isStandardEdition() ? getAllowedIndexForStandard(cfg) : null;
+      setEnterpriseTrackCueForSlider(slider, cfg, allowedIdx);
+    });
+  });
+
+  window.addEventListener("resize", () => {
+    SCALING_SLIDERS.forEach(cfg => {
+      const slider = $(cfg.sliderId);
+      if (!slider) return;
+      const allowedIdx = isStandardEdition() ? getAllowedIndexForStandard(cfg) : null;
+      setEnterpriseTrackCueForSlider(slider, cfg, allowedIdx);
+    });
+  });
 
   build();
 }
