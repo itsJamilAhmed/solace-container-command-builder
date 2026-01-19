@@ -253,7 +253,7 @@ function generateHANode(role) {
   
   args.push(`--env redundancy_enable=true`);
   args.push(`--env configsync_enable=yes`);
-  args.push(`--env configsync_enable=yes`);
+  //args.push(`--env configsync_enable=yes`);
 
   const raw = ($("scaling_params")?.value || "").trim();
   if (raw) {
@@ -275,7 +275,7 @@ function generateHANode(role) {
 
   if (role === "primary") args.push(`--env redundancy_activestandbyrole=primary`);
   if (role === "backup") args.push(`--env redundancy_activestandbyrole=backup`);
-  //if (role === "monitor") args.push(`--env nodetype=monitoring`);
+  if (role === "monitor") args.push(`--env nodetype=monitoring`);
 
   tlsServerCertArgs().forEach(a => args.push(a));
 
@@ -534,7 +534,7 @@ function generateComposeHANode(role) {
 
   if (role === "primary") environment.push(`redundancy_activestandbyrole=primary`);
   if (role === "backup") environment.push(`redundancy_activestandbyrole=backup`);
-  //if (role === "monitor") environment.push(`nodetype=monitoring`);
+  if (role === "monitor") environment.push(`nodetype=monitoring`);
 
   environment.push(`routername=${name}`);
 
