@@ -31,7 +31,7 @@ function wrapWithImageLast(args, imageArg) {
   const FORCE_NEWLINE_PREFIXES = [
     "--name=",
     "--env nodetype=monitoring",
-    "--env redundancy_activestandbyrole=active",
+    "--env redundancy_activestandbyrole=primary",
     "--env redundancy_activestandbyrole=backup"
   ];
 
@@ -195,8 +195,13 @@ function haNodes() {
 function haConnectViaAll(nodes) {
   return [
     `--env redundancy_group_node_${nodes.primary.name}_connectvia=${nodes.primary.host}`,
+    `--env redundancy_group_node_${nodes.primary.name}_nodetype=message_routing`,
+
     `--env redundancy_group_node_${nodes.backup.name}_connectvia=${nodes.backup.host}`,
+    `--env redundancy_group_node_${nodes.backup.name}_nodetype=message_routing`,
+
     `--env redundancy_group_node_${nodes.monitor.name}_connectvia=${nodes.monitor.host}`,
+    `--env redundancy_group_node_${nodes.monitor.name}_nodetype=monitoring`,
   ];
 }
 
@@ -248,6 +253,7 @@ function generateHANode(role) {
   
   args.push(`--env redundancy_enable=true`);
   args.push(`--env configsync_enable=yes`);
+  args.push(`--env configsync_enable=yes`);
 
   const raw = ($("scaling_params")?.value || "").trim();
   if (raw) {
@@ -267,9 +273,9 @@ function generateHANode(role) {
 
   haConnectViaAll(nodes).forEach(a => args.push(a));
 
-  if (role === "primary") args.push(`--env redundancy_activestandbyrole=active`);
+  if (role === "primary") args.push(`--env redundancy_activestandbyrole=primary`);
   if (role === "backup") args.push(`--env redundancy_activestandbyrole=backup`);
-  if (role === "monitor") args.push(`--env nodetype=monitoring`);
+  //if (role === "monitor") args.push(`--env nodetype=monitoring`);
 
   tlsServerCertArgs().forEach(a => args.push(a));
 
@@ -521,11 +527,14 @@ function generateComposeHANode(role) {
 
   ["primary", "backup", "monitor"].forEach(r => {
     environment.push(`redundancy_group_node_${nodes[r].name}_connectvia=${nodes[r].host}`);
+    environment.push(
+      `redundancy_group_node_${nodes[r].name}_nodetype=${r === "monitor" ? "monitoring" : "message_routing"}`
+    );
   });
 
-  if (role === "primary") environment.push(`redundancy_activestandbyrole=active`);
+  if (role === "primary") environment.push(`redundancy_activestandbyrole=primary`);
   if (role === "backup") environment.push(`redundancy_activestandbyrole=backup`);
-  if (role === "monitor") environment.push(`nodetype=monitoring`);
+  //if (role === "monitor") environment.push(`nodetype=monitoring`);
 
   environment.push(`routername=${name}`);
 
