@@ -614,6 +614,11 @@ function syncEncryptedPasswordNoteVisibility() {
   setCalloutVisible("pw_encrypted_note", method === "encrypted_password");
 }
 
+function syncFilePathPasswordNoteVisibility() {
+  const method = ($("password_method")?.value || "").trim();
+  setCalloutVisible("pw_filepath_note", method === "password_file");
+}
+
 function syncPortsSectionVisibility() {
   const net = ($("network_mode")?.value || "bridge").trim();
   setFadedSectionVisible("ports_wrap", net !== "host");
@@ -703,6 +708,7 @@ function build() {
   syncSoftwareEditionUi();
   syncStorageTipVisibility();
   syncEncryptedPasswordNoteVisibility();
+  syncFilePathPasswordNoteVisibility();
   syncHaPskModeUi();
 
   const mode = ($("mode")?.value || "standalone").trim();

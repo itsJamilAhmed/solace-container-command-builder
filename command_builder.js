@@ -31,7 +31,7 @@ function wrapWithImageLast(args, imageArg) {
   const FORCE_NEWLINE_PREFIXES = [
     "--name=",
     "--env nodetype=monitoring",
-    "--env redundancy_activestandbyrole=active",
+    "--env redundancy_activestandbyrole=primary",
     "--env redundancy_activestandbyrole=backup"
   ];
 
@@ -195,8 +195,13 @@ function haNodes() {
 function haConnectViaAll(nodes) {
   return [
     `--env redundancy_group_node_${nodes.primary.name}_connectvia=${nodes.primary.host}`,
+    `--env redundancy_group_node_${nodes.primary.name}_nodetype=message_routing`,
+
     `--env redundancy_group_node_${nodes.backup.name}_connectvia=${nodes.backup.host}`,
+    `--env redundancy_group_node_${nodes.backup.name}_nodetype=message_routing`,
+
     `--env redundancy_group_node_${nodes.monitor.name}_connectvia=${nodes.monitor.host}`,
+    `--env redundancy_group_node_${nodes.monitor.name}_nodetype=monitoring`,
   ];
 }
 
@@ -209,7 +214,7 @@ function haPskEnvArg() {
   }
   const v = ($("ha_psk_value")?.value || "").trim();
   if (!v) return "";
-  return `--env redundancy_authentication_presharedkey=${v}`;
+  return `--env redundancy_authentication_presharedkey_key=${v}`;
 }
 
 function generateHANode(role) {
@@ -246,7 +251,7 @@ function generateHANode(role) {
     args.push(`--env username_admin_globalaccesslevel=admin`);
   }
   
-  args.push(`--env redundancy_enable=true`);
+  args.push(`--env redundancy_enable=yes`);
   args.push(`--env configsync_enable=yes`);
 
   const raw = ($("scaling_params")?.value || "").trim();
@@ -267,7 +272,7 @@ function generateHANode(role) {
 
   haConnectViaAll(nodes).forEach(a => args.push(a));
 
-  if (role === "primary") args.push(`--env redundancy_activestandbyrole=active`);
+  if (role === "primary") args.push(`--env redundancy_activestandbyrole=primary`);
   if (role === "backup") args.push(`--env redundancy_activestandbyrole=backup`);
   if (role === "monitor") args.push(`--env nodetype=monitoring`);
 
@@ -511,7 +516,7 @@ function generateComposeHANode(role) {
 
   const { env: commonEnv, scaling } = collectEnvCommon(true);
 
-  const environment = [...commonEnv, `redundancy_enable=true`];
+  const environment = [...commonEnv, `redundancy_enable=yes`];
 
   const pskMode = (document.getElementById("ha_psk_mode")?.value || "direct").trim();
   const keyValue = (document.getElementById("ha_psk_value")?.value || "").trim();
@@ -521,9 +526,12 @@ function generateComposeHANode(role) {
 
   ["primary", "backup", "monitor"].forEach(r => {
     environment.push(`redundancy_group_node_${nodes[r].name}_connectvia=${nodes[r].host}`);
+    environment.push(
+      `redundancy_group_node_${nodes[r].name}_nodetype=${r === "monitor" ? "monitoring" : "message_routing"}`
+    );
   });
 
-  if (role === "primary") environment.push(`redundancy_activestandbyrole=active`);
+  if (role === "primary") environment.push(`redundancy_activestandbyrole=primary`);
   if (role === "backup") environment.push(`redundancy_activestandbyrole=backup`);
   if (role === "monitor") environment.push(`nodetype=monitoring`);
 
