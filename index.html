@@ -637,7 +637,7 @@
 		  <div class="tip-title">Important Note</div>
 		  <p>When using this option, load the file into your container runtime's <code>secret</code> filesystem first.</p>
 		  <p><code>/run/secrets</code> is a temporary, in-memory filesystem location inside a container where sensitive data (secrets) are mounted at runtime instead of being baked into images or passed via environment variables.</p>
-		  <p>e.g. <code>docker secret create solace-secrets solace-presharedkey.txt</code> to add the file into a secrets filesystem called <code>solace-secrets</code></p>
+		  <p>e.g. <code>podman secret create solace-secrets solace-presharedkey.txt</code> to add the file into a secrets filesystem called <code>solace-secrets</code></p>
 		  <p>Then when running the container, include the extra argument <code>--secret solace-secrets</code></p>
 		</div>		
       </div>
@@ -658,7 +658,7 @@
 	  <div class="tip-title">Important Note</div>
 	  <p>Load the file(s) into your container runtime's <code>secret</code> filesystem first.</p>
 	  <p><code>/run/secrets</code> is a temporary, in-memory filesystem location inside a container where sensitive data (secrets) are mounted at runtime instead of being baked into images or passed via environment variables.</p>
-	  <p>e.g. <code>docker secret create solace-secrets server-certificate.p12</code> to add the file into a secrets filesystem called <code>solace-secrets</code></p>
+	  <p>e.g. <code>podman secret create solace-secrets server-certificate.p12</code> to add the file into a secrets filesystem called <code>solace-secrets</code></p>
 	  <p>Then when running the container, include the extra argument <code>--secret solace-secrets</code></p>
 	</div>	
   </details>
