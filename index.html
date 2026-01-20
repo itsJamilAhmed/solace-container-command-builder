@@ -141,7 +141,7 @@
   <details open class="card">
     <summary>Container Storage Configuration</summary>
     <p class="section-desc">The state information associated with a Solace container should be externalised to a filesystem mount on the host machine for <a href="https://docs.solace.com/Software-Broker/SW-Broker-Set-Up/Containers/Deploying-Container-in-Production.htm#configuring-storage" target="_blank">performance and ease of management</a> in the future (as some of this data is long lived.)</p>
-    <p class="section-desc">The storage path on the host will be mounted to <code>/var/lib/solace</code> in the container's filesystem and will need to be built with XFS.</p>
+    <p class="section-desc">The storage path on the host will be mounted to <code>/var/lib/solace</code> in the container's filesystem and will need to be built with XFS, and have <u>write access</u> for the container user ID.</p>
 
     <label>Storage Path on Host
       <input id="storage_path" placeholder="/mnt/extfs/containers/solace/storage-group" />
@@ -188,6 +188,15 @@
       <input id="pw_value" placeholder="Enter password, path, or encrypted value" value="mysecret">
     </label>
 
+    <!-- Only show when password_method=file_path -->
+    <div id="pw_filepath_note" class="tip-box callout callout-hidden" aria-hidden="true">
+	  <div class="tip-title">Important Note</div>
+	  <p>When using this option, load the file into your container runtime's <code>secret</code> filesystem first.</p>
+	  <p><code>/run/secrets</code> is a temporary, in-memory filesystem location inside a container where sensitive data (secrets) are mounted at runtime instead of being baked into images or passed via environment variables.</p>
+	  <p>e.g. <code>docker secret create solace-secrets admin-pass.txt</code> to add the file into a secrets filesystem called <code>solace-secrets</code></p>
+	  <p>Then when running the container, include the extra argument <code>--secret solace-secrets</code></p>
+	</div>	
+	
     <!-- Only show when password_method=encrypted_password -->
     <div id="pw_encrypted_note" class="tip-box callout callout-hidden" aria-hidden="true">
       <div class="tip-title">Important Note</div>
@@ -623,8 +632,14 @@
 
       <div id="ha_psk_file_row" style="display:none;">
         <label for="ha_psk_filepath">Pre-shared key file path</label>
-        <input id="ha_psk_filepath" type="text" placeholder="/path/to/presharedkey.txt" autocomplete="off" value="/tmp/solace-psk.txt" />
-        <small class="ha-psk-help">Copy the pre-shared key value above into this file before starting the containers.</small>
+        <input id="ha_psk_filepath" type="text" placeholder="solace-presharedkey.txt" autocomplete="off" value="solace-presharedkey.txt" />
+		<div id="secret_psk_note" class="tip-box callout" >
+		  <div class="tip-title">Important Note</div>
+		  <p>When using this option, load the file into your container runtime's <code>secret</code> filesystem first.</p>
+		  <p><code>/run/secrets</code> is a temporary, in-memory filesystem location inside a container where sensitive data (secrets) are mounted at runtime instead of being baked into images or passed via environment variables.</p>
+		  <p>e.g. <code>docker secret create solace-secrets solace-presharedkey.txt</code> to add the file into a secrets filesystem called <code>solace-secrets</code></p>
+		  <p>Then when running the container, include the extra argument <code>--secret solace-secrets</code></p>
+		</div>		
       </div>
     </div>
   </details>
@@ -635,10 +650,17 @@
     <p class="section-desc">If setting up your broker to use TLS connections, provide a server certificate file path, and optionally a passphrase file path if the certificate is encrypted.</p>
 
     <label for="tls_servercertificate_filepath">Certificate file path</label>
-    <input id="tls_servercertificate_filepath" type="text" placeholder="/path/to/server-certificate.p12" autocomplete="off" />
+    <input id="tls_servercertificate_filepath" type="text" placeholder="server-certificate.p12" autocomplete="off" />
 
     <label for="tls_servercertificate_passphrasefilepath">Passphrase file path (optional)</label>
-    <input id="tls_servercertificate_passphrasefilepath" type="text" placeholder="/path/to/passphrase.txt" autocomplete="off" />
+    <input id="tls_servercertificate_passphrasefilepath" type="text" placeholder="passphrase.txt" autocomplete="off" />
+	<div id="certs_note" class="tip-box callout" >
+	  <div class="tip-title">Important Note</div>
+	  <p>Load the file(s) into your container runtime's <code>secret</code> filesystem first.</p>
+	  <p><code>/run/secrets</code> is a temporary, in-memory filesystem location inside a container where sensitive data (secrets) are mounted at runtime instead of being baked into images or passed via environment variables.</p>
+	  <p>e.g. <code>docker secret create solace-secrets server-certificate.p12</code> to add the file into a secrets filesystem called <code>solace-secrets</code></p>
+	  <p>Then when running the container, include the extra argument <code>--secret solace-secrets</code></p>
+	</div>	
   </details>
 
 <!-- OUTPUT -->
