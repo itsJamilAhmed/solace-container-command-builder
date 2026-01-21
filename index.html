@@ -372,6 +372,21 @@
             </tr>
           </table>
         </section>
+		
+        <!-- MNR -->
+        <section class="ports-group">
+          <div class="ports-group-header">
+            <h3>Multi-Node Routing (MNR)</h3>
+            <button type="button" class="ports-btn ports-btn-toggle" title="Selects or clears all ports in this protocol group." data-toggle-ports="55556" data-action="toggle-protocol">Select all</button>
+          </div>
+          <table class="ports-table">
+            <tr>
+              <td class="ports-check"><input type="checkbox" data-port="55556" /></td>
+              <td class="ports-label">MNR Control Port</td>
+              <td class="ports-port">55556</td>
+            </tr>
+          </table>
+        </section>		
       </div>
       <br/>
       <small>Note: Additional ports related to communication between HA nodes are automatically included when HA mode is selected and are not explicitly shown here.</small>

@@ -175,6 +175,7 @@ function generateStandalone() {
   }
 
   args.push(`--env routername=${$("standalone_name").value}`);
+  args.push(`--hostname=${$("standalone_name").value}`);
   args.push(`--name=${$("standalone_name").value}`);
 
   moveNameArgToSecondLast(args);
@@ -283,6 +284,7 @@ function generateHANode(role) {
   }
 
   args.push(`--env routername=${nodes[role].name}`);
+  args.push(`--hostname=${nodes[role].name}`);
   args.push(`--name=${nodes[role].name}`);
 
   moveNameArgToSecondLast(args);
@@ -422,6 +424,7 @@ function buildComposeYaml(serviceName, spec) {
   lines.push("services:");
   lines.push(`  ${serviceName}:`);
   lines.push(`    container_name: "${composeEscape(spec.container_name)}"`);
+  lines.push(`    hostname: "${composeEscape(spec.container_name)}"`);
   lines.push(`    image: "${composeEscape(spec.image)}"`);
 
   if (spec.restart) lines.push(`    restart: "${composeEscape(spec.restart)}"`);
