@@ -363,6 +363,7 @@ function attachScalingSliderHandlers() {
 
       setBadgeText(cfg.badgeId, cfg.labels[idx]);
       updateScalingEnvVar(cfg.key, cfg.values[idx]);
+	  updateScalingResourceSummary();
       build();
     };
 
@@ -467,6 +468,9 @@ function syncTextareaFromMaxSpoolUsage() {
   } else {
     updateScalingEnvVar("messagespool_maxspoolusage", Math.round(gb * 1000));
   }
+  
+  updateScalingResourceSummary();
+  build();
 }
 
 /* =========================================================
@@ -614,6 +618,11 @@ function syncEncryptedPasswordNoteVisibility() {
   setCalloutVisible("pw_encrypted_note", method === "encrypted_password");
 }
 
+function syncFilePathPasswordNoteVisibility() {
+  const method = ($("password_method")?.value || "").trim();
+  setCalloutVisible("pw_filepath_note", method === "password_file");
+}
+
 function syncPortsSectionVisibility() {
   const net = ($("network_mode")?.value || "bridge").trim();
   setFadedSectionVisible("ports_wrap", net !== "host");
@@ -703,6 +712,7 @@ function build() {
   syncSoftwareEditionUi();
   syncStorageTipVisibility();
   syncEncryptedPasswordNoteVisibility();
+  syncFilePathPasswordNoteVisibility();
   syncHaPskModeUi();
 
   const mode = ($("mode")?.value || "standalone").trim();
@@ -750,6 +760,342 @@ function build() {
   }
 }
 
+// ---- Scaling Resource Summary Calculations (if needed, otherwise static values) ----
+function calcCpuRequirement() {
+  const textarea = document.getElementById("scaling_params");
+  if (!textarea) return "—";
+
+  // Extract max connection count from scaling params
+  const match = textarea.value.match(
+    /system_scaling_maxconnectioncount=(\d+)/
+  );
+
+  if (!match) return "—";
+
+  const connections = parseInt(match[1], 10);
+
+  if (connections <= 1000) return "2 cores";
+  if (connections <= 10000) return "4 cores";
+  if (connections <= 100000) return "8 cores";
+  return "12 cores"; // 200,000
+}
+
+
+function calcMemRequirement(){ 
+  const textarea = document.getElementById("scaling_params");
+  const spoolInput = document.getElementById("max_spool_usage_gb");
+
+  if (!textarea || !spoolInput) return "—";
+
+  // --- Extract max connections ---
+  const connMatch = textarea.value.match(
+    /system_scaling_maxconnectioncount=(\d+)/
+  );
+  if (!connMatch) return "—";
+
+  const connections = parseInt(connMatch[1], 10);
+
+  const queueMatch = textarea.value.match(
+    /system_scaling_maxqueuemessagecount=(\d+)/
+  );
+  const queueMsgs = queueMatch ? parseInt(queueMatch[1], 10) : 0;
+
+  const bridgesMatch = textarea.value.match(/system_scaling_maxbridgecount=(\d+)/);
+  const maxBridges = bridgesMatch ? parseInt(bridgesMatch[1], 10) : 0;
+
+  const subsMatch = textarea.value.match(/system_scaling_maxsubscriptioncount=(\d+)/);
+  const maxSubs = subsMatch ? parseInt(subsMatch[1], 10) : 0;
+
+  const kafkaBridgesMatch = textarea.value.match(/system_scaling_maxkafkabridgecount=(\d+)/);
+  const maxKafkaBridges = kafkaBridgesMatch ? parseInt(kafkaBridgesMatch[1], 10) : 0;
+
+  const kafkaBrokerConnsMatch = textarea.value.match(/system_scaling_maxkafkabrokerconnectioncount=(\d+)/);
+  const maxKafkaBrokerConns = kafkaBrokerConnsMatch ? parseInt(kafkaBrokerConnsMatch[1], 10) : 0;
+
+  const maxMessageSizeMatch = textarea.value.match(/system_scaling_maxguaranteedmessagesize=(\d+)/);
+  const maxMessageSize = maxMessageSizeMatch ? parseInt(maxMessageSizeMatch[1], 10) : 0;
+
+  // --- Minimum memory by connection tier (MiB) ---
+  let minMemoryMiB;
+  if (connections <= 100) {
+    minMemoryMiB = 3410;
+  } else if (connections <= 1000) {
+    minMemoryMiB = 5300;
+  } else if (connections <= 10000) {
+    minMemoryMiB = 10737;
+  } else if (connections <= 100000) {
+    minMemoryMiB = 23827;
+  } else {
+    minMemoryMiB = 45483;
+  }
+
+  // Add overhead from Max Queue Messages setting
+  let queueMemoryMb = 0;
+
+  if (queueMsgs >= 3000) {
+    queueMemoryMb = 8909;
+  } else if (queueMsgs >= 240) {
+    queueMemoryMb = 615;
+  }
+
+  let bridgesMemoryMb = 0;
+  if (maxBridges >= 5000) {
+    bridgesMemoryMb = 900;
+  } else if (maxBridges >= 500) {
+    bridgesMemoryMb = 100;
+  }
+  
+  let subsMemoryMb = 0;
+  if (maxSubs >= 5000000) {
+    subsMemoryMb = 6000;
+  } else if (maxSubs >= 500000) {
+    subsMemoryMb = 600;
+  }
+
+  let maxMessageMemoryMb = 0;
+  if (maxMessageSize >= 30) {
+    maxMessageMemoryMb = 383;
+  } 
+
+  let maxKafkaBridgesMemoryMb = 0;
+  if (maxKafkaBridges >= 200) {
+    maxKafkaBridgesMemoryMb = 8000;
+  } else if (maxKafkaBridges >= 50) {
+	maxKafkaBridgesMemoryMb = 2000;
+  }	else if (maxKafkaBridges >= 10) {
+  	maxKafkaBridgesMemoryMb = 400;
+  }
+  
+  let maxKafkaBrokerConnsMemoryMb = 0;
+  if (maxKafkaBrokerConns >= 10000) {
+    maxKafkaBrokerConnsMemoryMb = 10000;
+  } else if (maxKafkaBrokerConns >= 2000) {
+	maxKafkaBrokerConnsMemoryMb = 2000;
+  }	else if (maxKafkaBrokerConns >= 10) {
+  	maxKafkaBrokerConnsMemoryMb = 300;
+  }
+
+  const totalMemoryMiB = Math.round(
+    minMemoryMiB +
+    queueMemoryMb +
+	bridgesMemoryMb +
+	subsMemoryMb +
+	maxMessageMemoryMb +
+	maxKafkaBridgesMemoryMb +
+	maxKafkaBrokerConnsMemoryMb
+  );
+
+  // --- Format with thousands separator ---
+  return totalMemoryMiB.toLocaleString() + " MiB";
+}
+
+function calcMemCgroupRequirement(){ 
+  const textarea = document.getElementById("scaling_params");
+  const spoolInput = document.getElementById("max_spool_usage_gb");
+
+  if (!textarea || !spoolInput) return "—";
+
+  // --- Extract max connections ---
+  const connMatch = textarea.value.match(
+    /system_scaling_maxconnectioncount=(\d+)/
+  );
+  if (!connMatch) return "—";
+
+  const connections = parseInt(connMatch[1], 10);
+
+  const queueMatch = textarea.value.match(
+    /system_scaling_maxqueuemessagecount=(\d+)/
+  );
+  const queueMsgs = queueMatch ? parseInt(queueMatch[1], 10) : 0;
+
+  const bridgesMatch = textarea.value.match(/system_scaling_maxbridgecount=(\d+)/);
+  const maxBridges = bridgesMatch ? parseInt(bridgesMatch[1], 10) : 0;
+
+  const subsMatch = textarea.value.match(/system_scaling_maxsubscriptioncount=(\d+)/);
+  const maxSubs = subsMatch ? parseInt(subsMatch[1], 10) : 0;
+
+  const kafkaBridgesMatch = textarea.value.match(/system_scaling_maxkafkabridgecount=(\d+)/);
+  const maxKafkaBridges = kafkaBridgesMatch ? parseInt(kafkaBridgesMatch[1], 10) : 0;
+
+  const kafkaBrokerConnsMatch = textarea.value.match(/system_scaling_maxkafkabrokerconnectioncount=(\d+)/);
+  const maxKafkaBrokerConns = kafkaBrokerConnsMatch ? parseInt(kafkaBrokerConnsMatch[1], 10) : 0;
+
+  const maxMessageSizeMatch = textarea.value.match(/system_scaling_maxguaranteedmessagesize=(\d+)/);
+  const maxMessageSize = maxMessageSizeMatch ? parseInt(maxMessageSizeMatch[1], 10) : 0;
+
+  // --- Minimum memory by connection tier (MiB) ---
+  let minMemoryMiB;
+  if (connections <= 100) {
+    minMemoryMiB = 2480;
+  } else if (connections <= 1000) {
+    minMemoryMiB = 4424;
+  } else if (connections <= 10000) {
+    minMemoryMiB = 10351;
+  } else if (connections <= 100000) {
+    minMemoryMiB = 23421;
+  } else {
+    minMemoryMiB = 44940;
+  }
+
+  // Add overhead from Max Queue Messages setting
+  let queueMemoryMb = 0;
+
+  if (queueMsgs >= 3000) {
+    queueMemoryMb = 9281;
+  } else if (queueMsgs >= 240) {
+    queueMemoryMb = 614;
+  }
+
+  let bridgesMemoryMb = 0;
+  if (maxBridges >= 5000) {
+    bridgesMemoryMb = 900;
+  } else if (maxBridges >= 500) {
+    bridgesMemoryMb = 100;
+  }
+  
+  let subsMemoryMb = 0;
+  if (maxSubs >= 5000000) {
+    subsMemoryMb = 6000;
+  } else if (maxSubs >= 500000) {
+    subsMemoryMb = 600;
+  }
+
+  let maxMessageMemoryMb = 0;
+  if (maxMessageSize >= 30) {
+    maxMessageMemoryMb = 383;
+  } 
+
+  let maxKafkaBridgesMemoryMb = 0;
+  if (maxKafkaBridges >= 200) {
+    maxKafkaBridgesMemoryMb = 8000;
+  } else if (maxKafkaBridges >= 50) {
+	maxKafkaBridgesMemoryMb = 2000;
+  }	else if (maxKafkaBridges >= 10) {
+  	maxKafkaBridgesMemoryMb = 400;
+  }
+  
+  let maxKafkaBrokerConnsMemoryMb = 0;
+  if (maxKafkaBrokerConns >= 10000) {
+    maxKafkaBrokerConnsMemoryMb = 10000;
+  } else if (maxKafkaBrokerConns >= 2000) {
+	maxKafkaBrokerConnsMemoryMb = 2000;
+  }	else if (maxKafkaBrokerConns >= 10) {
+  	maxKafkaBrokerConnsMemoryMb = 300;
+  }
+
+  const totalMemoryMiB = Math.round(
+    minMemoryMiB +
+    queueMemoryMb +
+	bridgesMemoryMb +
+	subsMemoryMb +
+	maxMessageMemoryMb +
+	maxKafkaBridgesMemoryMb +
+	maxKafkaBrokerConnsMemoryMb
+  );
+
+  // --- Format with thousands separator ---
+  return totalMemoryMiB.toLocaleString() + " MiB";
+}
+
+function calcShmRequirement(){ 
+  const shm = 1000;
+  return shm.toLocaleString() + " MB";
+}
+
+function calcBackingStoreRequirement(){ 
+  const backing = 1500;
+  return backing.toLocaleString() + " MB";
+ 
+}
+
+function calcDiskRequirement() {
+  const textarea = document.getElementById("scaling_params");
+  const spoolInput = document.getElementById("max_spool_usage_gb");
+
+  if (!textarea || !spoolInput) return "—";
+
+  // --- Extract max connections ---
+  const connMatch = textarea.value.match(
+    /system_scaling_maxconnectioncount=(\d+)/
+  );
+  if (!connMatch) return "—";
+
+  const connections = parseInt(connMatch[1], 10);
+
+  const queueMatch = textarea.value.match(
+    /system_scaling_maxqueuemessagecount=(\d+)/
+  );
+  const queueMsgs = queueMatch ? parseInt(queueMatch[1], 10) : 0;
+
+  const bridgesMatch = textarea.value.match(/system_scaling_maxbridgecount=(\d+)/);
+  const maxBridges = bridgesMatch ? parseInt(bridgesMatch[1], 10) : 0;
+
+  const subsMatch = textarea.value.match(/system_scaling_maxsubscriptioncount=(\d+)/);
+  const maxSubs = subsMatch ? parseInt(subsMatch[1], 10) : 0;
+
+  // --- Extract spool usage (GB → MB) ---
+  const spoolGb = parseFloat(spoolInput.value);
+  const spoolMb = isNaN(spoolGb) ? 0 : spoolGb * 1000 * 1.1;
+
+  // --- Minimum disk by connection tier (MB) ---
+  let minDiskMb;
+  if (connections <= 100) {
+    minDiskMb = 5100;
+  } else if (connections <= 1000) {
+    minDiskMb = 6400;
+  } else if (connections <= 10000) {
+    minDiskMb = 7495;
+  } else if (connections <= 100000) {
+    minDiskMb = 10145;
+  } else {
+    minDiskMb = 12945;
+  }
+
+  // Add overhead from Max Queue Messages setting
+  let queueDiskMb = 0;
+
+  if (queueMsgs >= 3000) {
+    queueDiskMb = 22000;
+  } else if (queueMsgs >= 240) {
+    queueDiskMb = 1200;
+  }
+
+  let bridgesDiskMb = 0;
+
+  if (maxBridges >= 5000) {
+    bridgesDiskMb = 260;
+  } else if (maxBridges >= 500) {
+    bridgesDiskMb = 5;
+  }
+  
+  let subsDiskMb = 0;
+  if (maxSubs >= 5000000) {
+    subsDiskMb = 150;
+  }
+
+  const totalDiskMb = Math.round(
+    minDiskMb +
+    queueDiskMb +
+	bridgesDiskMb +
+	subsDiskMb +
+    spoolMb
+  );
+
+  // --- Format with thousands separator ---
+  return totalDiskMb.toLocaleString() + " MB";
+}
+
+
+function updateScalingResourceSummary(){
+  const set = (id, val)=>{ const el=document.getElementById(id); if(el) el.textContent=val; };
+  set("res_cpu", calcCpuRequirement());
+  set("res_hvm", calcMemRequirement());
+  set("res_cgroup", calcMemCgroupRequirement());
+  set("res_shm", calcShmRequirement());
+  set("res_backing", calcBackingStoreRequirement()); 
+  set("res_storage", calcDiskRequirement());   
+}
+
 /* =========================================================
    Init
    ========================================================= */
@@ -763,6 +1109,7 @@ function initOnceBuilderReady() {
 
   attachScalingSliderHandlers();
   syncMaxSpoolUsageFromTextarea();
+  updateScalingResourceSummary();
 
   document.querySelectorAll("input,select,textarea").forEach((el) => {
     el.addEventListener("input", () => {
