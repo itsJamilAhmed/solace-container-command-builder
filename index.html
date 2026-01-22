@@ -417,7 +417,7 @@
         <div class="scaling-row">
           <div class="scaling-left">
             <div class="scaling-label">Max Connections</div>
-            <div class="scaling-help" title="Scaling parameter: system_scaling_maxconnectioncount" aria-hidden="true">?</div>
+            <div class="scaling-help" title="Maximum number of client connections allowed to the broker at any one time." aria-hidden="true">?</div>
           </div>
           <div class="scaling-right">
             <div class="scaling-trackline">
@@ -440,7 +440,7 @@
         <div class="scaling-row">
           <div class="scaling-left">
             <div class="scaling-label">Max Queue Messages</div>
-            <div class="scaling-help" title="Scaling parameter: system_scaling_maxqueuemessagecount" aria-hidden="true">?</div>
+            <div class="scaling-help" title="Maximum number of references to messages queued for delivery to consumers across the broker as a whole. (Unit: millions)" aria-hidden="true">?</div>
           </div>
           <div class="scaling-right">
             <div class="scaling-trackline">
@@ -463,7 +463,7 @@
         <div class="scaling-row">
           <div class="scaling-left">
             <div class="scaling-label">Max Kafka Bridges</div>
-            <div class="scaling-help" title="Scaling parameter: system_scaling_maxkafkabridgecount" aria-hidden="true">?</div>
+            <div class="scaling-help" title="The maximum number of Kafka bridges that can be created on the broker. (Should be set >0 along with the broker connections parameter.)" aria-hidden="true">?</div>
           </div>
           <div class="scaling-right">
             <div class="scaling-trackline">
@@ -486,7 +486,7 @@
         <div class="scaling-row">
           <div class="scaling-left">
             <div class="scaling-label">Max Kafka Broker Connections</div>
-            <div class="scaling-help" title="Scaling parameter: system_scaling_maxkafkabrokerconnectioncount" aria-hidden="true">?</div>
+            <div class="scaling-help" title="The maximum number of Kafka broker connections. (Should be set >0 along with the Kafka bridge count parameter.)" aria-hidden="true">?</div>
           </div>
           <div class="scaling-right">
             <div class="scaling-trackline">
@@ -509,7 +509,7 @@
         <div class="scaling-row">
           <div class="scaling-left">
             <div class="scaling-label">Max Bridges</div>
-            <div class="scaling-help" title="Scaling parameter: system_scaling_maxbridgecount" aria-hidden="true">?</div>
+            <div class="scaling-help" title="Maximum number of message VPN bridges that can be created across the whole broker." aria-hidden="true">?</div>
           </div>
           <div class="scaling-right">
             <div class="scaling-trackline">
@@ -532,7 +532,7 @@
         <div class="scaling-row">
           <div class="scaling-left">
             <div class="scaling-label">Max Subscriptions</div>
-            <div class="scaling-help" title="Scaling parameter: system_scaling_maxsubscriptioncount" aria-hidden="true">?</div>
+            <div class="scaling-help" title="Maximum number of subscriptions across the broker as a whole. If the broker is part of a DMR network, it should match this number with the other nodes in the network. " aria-hidden="true">?</div>
           </div>
           <div class="scaling-right">
             <div class="scaling-trackline">
@@ -555,7 +555,7 @@
         <div class="scaling-row">
           <div class="scaling-left">
             <div class="scaling-label">Max Guaranteed Message Size</div>
-            <div class="scaling-help" title="Scaling parameter: system_scaling_maxguaranteedmessagesize" aria-hidden="true">?</div>
+            <div class="scaling-help" title="The maximum size of a guaranteed message that can be sent to the broker. (Unit: MB)" aria-hidden="true">?</div>
           </div>
           <div class="scaling-right">
             <div class="scaling-trackline">
@@ -581,13 +581,21 @@
         <div class="scaling-resource-summary__title">Host Resource Requirements</div>
 
         <div class="scaling-resource-summary__grid">
+		  <div class="sum-row"><small><b>Message-Routing Nodes:</b></small></div>
           <div class="sum-row"><span>CPU <span class="help-icon" title="The required number of CPU cores.">?</span></span><strong id="res_cpu">—</strong></div>
           <div class="sum-row"><span>Host Virtual Memory <span class="help-icon" title="The recommended amount of memory to allocate to the container in Mebibytes (2^20 bytes)">?</span></span><strong id="res_hvm">—</strong></div>
           <div class="sum-row"><span>Memory Control Group Limit <span class="help-icon" title="An optional configuration to limit the memory consumption of the container using a Linux control group.">?</span></span><strong id="res_cgroup">—</strong></div>
           <div class="sum-row"><span>Posix Shared Mem (/dev/shm) <span class="help-icon" title="The amount of memory to allocate to /dev/shm">?</span></span><strong id="res_shm">—</strong></div>
           <div class="sum-row"><span>Container Runtime Backing Store <span class="help-icon" title="The amount of storage required for container specific files and temporary data.">?</span></span><strong id="res_backing">—</strong></div>
           <div class="sum-row"><span>Disk Storage <span class="help-icon" title="The total amount of storage required for the storage-group.">?</span></span><strong id="res_storage">—</strong></div>
-          <small>These requirements are for the message-routing nodes only. Monitoring nodes require less resources and do not change by scaling tiers. </small>
+          <div class="sum-row"></div>
+		  <div class="sum-row"><small><b>Monitoring Nodes:</b></small></div>
+          <div class="sum-row"><span>CPU</span><strong id="res_cpu_mon">—</strong></div>
+          <div class="sum-row"><span>Host Virtual Memory</span><strong id="res_hvm_mon">—</strong></div>
+          <div class="sum-row"><span>Memory Control Group Limit</span><strong id="res_cgroup_mon">—</strong></div>
+          <div class="sum-row"><span>Posix Shared Mem (/dev/shm)</span><strong id="res_shm_mon">—</strong></div>
+          <div class="sum-row"><span>Container Runtime Backing Store</span><strong id="res_backing_mon">—</strong></div>
+          <div class="sum-row"><span>Disk Storage</span><strong id="res_storage_mon">—</strong></div>
 
         </div>
       </aside>

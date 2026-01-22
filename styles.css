@@ -965,21 +965,31 @@ body.dark .scaling-resource-summary{
 .scaling-resource-summary .sum-row{
   display: grid;
   grid-template-columns: 1fr auto;
-  gap: 10px;
+  gap: 8px;
   align-items: baseline;
+  margin-bottom: -4px;
 }
 
 .scaling-resource-summary .sum-row strong{
   font-size: 14px; 
   line-height: 1.2;
-  font-weight: 600;
+  font-weight: 500;
+  margin-bottom: -4px;
+}
+
+.scaling-resource-summary .sum-row small{
+  font-size: 14px; 
+  line-height: 1.2;
+  font-weight: 500;
+  margin-bottom: -4px;
 }
 
 .scaling-resource-summary .sum-row span{
   font-size: 14px;
   line-height: 1.2;
+  margin-bottom: -4px;
 }
 
 .scaling-resource-summary__title{
-  margin-bottom: 18px;
+  margin-bottom: 8px;
 }

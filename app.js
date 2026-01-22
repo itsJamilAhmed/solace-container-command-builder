@@ -780,6 +780,10 @@ function calcCpuRequirement() {
   return "12 cores"; // 200,000
 }
 
+function calcCpuRequirementMon() {
+  return "1 core";
+}
+
 
 function calcMemRequirement(){ 
   const textarea = document.getElementById("scaling_params");
@@ -1008,6 +1012,24 @@ function calcBackingStoreRequirement(){
  
 }
 
+function calcMemRequirementMon(){ 
+  const backing = 1965;
+  return backing.toLocaleString() + " MiB";
+ 
+}
+
+function calcMemCgroupRequirementMon(){ 
+  const backing = 1550;
+  return backing.toLocaleString() + " MiB";
+ 
+}
+
+function calcDiskRequirementMon(){ 
+  const backing = 2300;
+  return backing.toLocaleString() + " MB";
+ 
+}
+
 function calcDiskRequirement() {
   const textarea = document.getElementById("scaling_params");
   const spoolInput = document.getElementById("max_spool_usage_gb");
@@ -1094,6 +1116,13 @@ function updateScalingResourceSummary(){
   set("res_shm", calcShmRequirement());
   set("res_backing", calcBackingStoreRequirement()); 
   set("res_storage", calcDiskRequirement());   
+  
+  set("res_cpu_mon", calcCpuRequirementMon());
+  set("res_hvm_mon", calcMemRequirementMon());
+  set("res_cgroup_mon", calcMemCgroupRequirementMon());
+  set("res_shm_mon", calcShmRequirement());
+  set("res_backing_mon", calcBackingStoreRequirement()); 
+  set("res_storage_mon", calcDiskRequirementMon());   
 }
 
 /* =========================================================
