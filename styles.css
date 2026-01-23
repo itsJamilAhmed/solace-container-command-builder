@@ -417,19 +417,25 @@ textarea:focus {
 
 .scaling-row{
   display: grid;
-  grid-template-columns: minmax(140px, 38%) 1fr;
-  column-gap: 12px;
+  grid-template-columns: 220px 1fr;
+  column-gap: 14px;
   align-items: center;
 
   /* reduce vertical space between rows */
   padding: 6px 0;
 }
 
+/* .scaling-left{ */
+  /* display: flex; */
+  /* min-width: 0; */
+  /* align-items: flex-start; /* was center */ */
+  /* gap: 6px; */
+/* } */
+
 .scaling-left{
-  display: flex;
-  min-width: 0;
-  align-items: center;
-  gap: 10px;
+  justify-content: flex-start;   /* defensive: never space-between */
+  align-items: flex-start;       /* keep ? aligned to the first line */
+  gap: 6px;
 }
 
 .scaling-label{
@@ -438,9 +444,16 @@ textarea:focus {
   font-size: 13px;
   font-weight: 600;
   color: #222;
+  min-width: 0;
+}
+
+.scaling-left .scaling-label{
+  display: inline;               /* key: stop acting like a full-width block */
+  line-height: 1.15;
 }
 
 .scaling-help{
+  align-self: flex-start;	
   display: inline-flex;
   flex: 0 0 auto;
   align-items: center;
@@ -454,7 +467,14 @@ textarea:focus {
   font-weight: 700;
   cursor: help;
   user-select: none;
+  margin-top: 1px;         /* align with first line of label */
 }
+
+/* .scaling-left .scaling-help{ */
+  /* flex: 0 0 auto; */
+  /* align-self: flex-start; */
+  /* margin-top: 1px;               /* tiny nudge to align to first text line */ */
+/* } */
 
 .scaling-right{
   width: 100%;
@@ -530,7 +550,7 @@ textarea:focus {
 
 .spool-input-wrap{
   display: grid;
-  grid-template-columns: 240px minmax(360px, 560px);
+  grid-template-columns: 200px 1fr;
   column-gap: 14px;
   align-items: center;
 
@@ -539,6 +559,7 @@ textarea:focus {
 }
 
 .spool-input-label{
+  min-width: 0; /* allow wrapping instead of forcing width */	
   display: flex;
   align-items: center;
   gap: 10px;
@@ -607,7 +628,6 @@ textarea:focus {
   justify-content: space-between;
   padding: 0 10px;  /* compensates for thumb radius so endpoints align */
   pointer-events: none;
-  z-index: 2;
 }
 
 .scaling-stop-dots span{
