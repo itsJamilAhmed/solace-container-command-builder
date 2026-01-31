@@ -646,16 +646,18 @@ function generateHaPsk(targetLength) {
     length = Math.floor(Math.random() * (maxLen - minLen + 1)) + minLen;
   }
 
-  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
-  const buf = new Uint32Array(length);
-  crypto.getRandomValues(buf);
+  // Base64 length must be a multiple of 4
+  length = Math.floor(length / 4) * 4;
 
-  let out = "";
-  for (let i = 0; i < length; i++) {
-    out += chars[buf[i] % chars.length];
-  }
+  // 4 base64 chars = 3 bytes
+  const byteLen = (length / 4) * 3;
+  const bytes = new Uint8Array(byteLen);
+  crypto.getRandomValues(bytes);
 
-  valueEl.value = out;
+  // Standard Base64 encoding
+  const base64 = btoa(String.fromCharCode(...bytes));
+
+  valueEl.value = base64.slice(0, length);
 }
 
 function syncHaPskModeUi() {
