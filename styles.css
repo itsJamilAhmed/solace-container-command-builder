@@ -396,19 +396,28 @@ textarea:focus {
   pointer-events: none;
 }
 
-/* ------------------------------------------------------------
-   Scaling Parameters – tightened layout + tick alignment
-   ------------------------------------------------------------ */
+.scaling-sliders-and-summary{
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 360px;
+  gap: 16px;
+  align-items: start;
+}
+
+.scaling-sliders-and-summary .scaling-sliders{
+  min-width: 0;
+}
+
+
 
 .scaling-sliders{
   /* narrower block to reduce page width and keep controls compact */
-  max-width: 820px;
+  //max-width: 650px;
   margin-top: 6px;
 }
 
 .scaling-row{
   display: grid;
-  grid-template-columns: 240px minmax(360px, 560px);
+  grid-template-columns: 220px 1fr;
   column-gap: 14px;
   align-items: center;
 
@@ -416,20 +425,37 @@ textarea:focus {
   padding: 6px 0;
 }
 
+/* .scaling-left{ */
+  /* display: flex; */
+  /* min-width: 0; */
+  /* align-items: flex-start; /* was center */ */
+  /* gap: 6px; */
+/* } */
+
 .scaling-left{
-  display: flex;
-  align-items: center;
-  gap: 10px;
+  justify-content: flex-start;   /* defensive: never space-between */
+  align-items: flex-start;       /* keep ? aligned to the first line */
+  gap: 6px;
 }
 
 .scaling-label{
+  white-space: normal;
+  line-height: 1.15;
   font-size: 13px;
   font-weight: 600;
   color: #222;
+  min-width: 0;
+}
+
+.scaling-left .scaling-label{
+  display: inline;               /* key: stop acting like a full-width block */
+  line-height: 1.15;
 }
 
 .scaling-help{
+  align-self: flex-start;	
   display: inline-flex;
+  flex: 0 0 auto;
   align-items: center;
   justify-content: center;
   width: 18px;
@@ -441,12 +467,19 @@ textarea:focus {
   font-weight: 700;
   cursor: help;
   user-select: none;
+  margin-top: 1px;         /* align with first line of label */
 }
 
+/* .scaling-left .scaling-help{ */
+  /* flex: 0 0 auto; */
+  /* align-self: flex-start; */
+  /* margin-top: 1px;               /* tiny nudge to align to first text line */ */
+/* } */
+
 .scaling-right{
-  /* keep the slider/ticks column from stretching too wide */
   width: 100%;
   max-width: 560px;
+  min-width: 0;
 }
 
 .scaling-trackline{
@@ -517,15 +550,16 @@ textarea:focus {
 
 .spool-input-wrap{
   display: grid;
-  grid-template-columns: 240px minmax(360px, 560px);
+  grid-template-columns: 200px 1fr;
   column-gap: 14px;
   align-items: center;
 
-  max-width: 820px;
+  max-width: 650px;
   margin-top: 8px;
 }
 
 .spool-input-label{
+  min-width: 0; /* allow wrapping instead of forcing width */	
   display: flex;
   align-items: center;
   gap: 10px;
@@ -539,12 +573,12 @@ textarea:focus {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 18px;
-  height: 18px;
+  width: 16px;
+  height: 16px;
   border-radius: 999px;
   background: #e7edf3;
   color: #4b5563;
-  font-size: 12px;
+  font-size: 10px;
   font-weight: 700;
   cursor: help;
   user-select: none;
@@ -554,7 +588,7 @@ textarea:focus {
   display: inline-flex;
   align-items: center;
   gap: 10px;
-  max-width: 560px;
+  max-width: 200px;
 }
 
 .spool-input-control input[type="number"]{
@@ -575,6 +609,7 @@ textarea:focus {
   position: relative;
   flex: 1 1 auto;
   min-width: 0;
+  max-width: 500px;
 }
 
 .scaling-track-wrap .scaling-range{
@@ -697,7 +732,14 @@ body.dark .ports-groups {
   gap: 14px;
 }
 
-@media (max-width: 900px) {
+
+@media (max-width: 860px){
+  .scaling-sliders-and-summary{
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 720px) {
   .ports-groups,
   body.dark .ports-groups {
     grid-template-columns: 1fr;
@@ -770,6 +812,9 @@ body.dark .scaling-badge {
   border-color: rgba(121, 184, 255, 0.45);
 }
 
+body.dark .scaling-resource-summary .sum-row span {
+  color: #c9d1d9; /* soft light gray, readable but not dominant */
+}
 
 .scaling-track-wrap{
   --std-cutoff: 100%;
@@ -856,7 +901,7 @@ body.dark .scaling-track-wrap .enterprise-label::after{
 /* Dark mode tuning */
 body.dark .scaling-track-wrap .enterprise-label {
   background: rgba(121, 184, 255, 0.50);
-  color: #0a4f8a;
+  color: #e6f1ff;
   border-color: rgba(121, 184, 255, 0.85);
 }
 body.dark .scaling-track-wrap .enterprise-label::after {
@@ -880,7 +925,91 @@ body.show-enterprise-labels .scaling-track-wrap.has-enterprise-label .enterprise
 
 .scaling-track-wrap::before { z-index: 0; }
 .scaling-track-wrap::after  { z-index: 1; } /* cutoff marker if you have it */
-.scalaling-stop-dots { z-index: 2; }
 .scaling-track-wrap .scaling-range { z-index: 3; }
 
 .scaling-track-wrap { position: relative; }
+
+/* Scaling resource summary panel */
+.scaling-resource-summary{
+  margin-top:16px;
+  padding:12px;
+  border:1px solid rgba(0,0,0,0.1);
+  border-radius:8px;
+  max-width: 300px;
+  width: 100%;
+  justify-self: center;
+
+}
+.scaling-resource-summary .resource-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px 16px;
+}
+.scaling-resource-summary span{
+  color:#666;
+  font-size:13px;
+}
+.scaling-resource-summary strong{
+  font-weight:700;
+}
+body.dark .scaling-resource-summary{
+  border-color:rgba(255,255,255,0.2);
+}
+
+.scaling-sliders-and-summary{
+  align-items: start;
+}
+
+.scaling-sliders-and-summary .scaling-sliders{
+  max-width: none;   /* override the 650px cap inside the grid */
+}
+
+.scaling-sliders-and-summary .scaling-resource-summary{
+  margin-top: 0;     /* prevent the panel being pushed downward */
+}
+
+
+.scaling-right{
+  max-width: none;  /* remove 560px cap */
+}
+
+.scaling-track-wrap{
+  max-width: none;  /* remove 500px cap */
+}
+
+.scaling-resource-summary__grid{
+  display: grid;
+  gap: 10px;
+}
+
+.scaling-resource-summary .sum-row{
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px;
+  align-items: baseline;
+  margin-bottom: -4px;
+}
+
+.scaling-resource-summary .sum-row strong{
+  font-size: 14px; 
+  line-height: 1.2;
+  font-weight: 500;
+  margin-bottom: -4px;
+}
+
+.scaling-resource-summary .sum-row small{
+  font-size: 14px; 
+  line-height: 1.2;
+  font-weight: 500;
+  margin-bottom: -4px;
+}
+
+.scaling-resource-summary .sum-row span{
+  font-size: 14px;
+  line-height: 1.2;
+  margin-bottom: -4px;
+}
+
+.scaling-resource-summary__title{
+  margin-bottom: 8px;
+}
